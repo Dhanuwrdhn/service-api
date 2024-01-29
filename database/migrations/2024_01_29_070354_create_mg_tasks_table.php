@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('mg_tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->constrained('mg_project')->onDelete('cascade');
+            $table->foreignId('project_id')->constrained('mg_projects')->onDelete('cascade');
             $table->string('task_name');
             $table->string('task_description')->nullable();
             $table->datetime('start_date')->default(now()->toDateTimeString());
@@ -23,7 +23,6 @@ return new class extends Migration
             $table->string('percentage_task')->nullable();
             $table->string('total_subtask_completed')->nullable();
             $table->enum('task_status', ['onPending','onReview', 'workingOnIt', 'Completed', ])->nullable();
-            $table->enum('task_submit_status', ['earlyFinish', 'finish', 'finish in delay','overdue' ])->nullable();
             $table->timestamps();
         });
     }

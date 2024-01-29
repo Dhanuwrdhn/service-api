@@ -56,8 +56,10 @@ Route::delete('employees/{id}', [\App\Http\Controllers\EmployeesController::clas
 
 // API EMPLOYEE PROJECT
 Route::get('employees-projects', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjects']);
-
-
+// API TASK
+Route::post('create-tasks', [\App\Http\Controllers\TasksController::class, 'create']);
+Route::get('show-tasks', [\App\Http\Controllers\TasksController::class, 'index']);
+Route::put('update-status/{id}', [\App\Http\Controllers\TasksController::class, 'updateStatus']);
 // API LOGIN
 Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']);
 // // refresh-token
