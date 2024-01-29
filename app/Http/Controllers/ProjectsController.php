@@ -7,8 +7,9 @@ use App\Models\Project;
 use App\Models\Job;
 use App\Models\Role;
 use App\Models\Team;
-use App\Models\Client;
+// use App\Models\Client;
 use App\Models\Task;
+use App\Models\Employees;
 use Illuminate\Support\Facades\Validator;
 
 class ProjectsController extends Controller
@@ -44,11 +45,12 @@ class ProjectsController extends Controller
             'role_id' => 'required',
             'jobs_id' => 'required',
             'team_id' => 'required',
-            'client_id' => 'required',
+            'pm_id' => 'required',
             'start_date' => 'required',
             'end_date' => 'required',
-            'project_status' => 'required|in:Ongoing,Completed',
+            'project_status' => 'required|in:Ongoing,workingOnIt,Completed',
             'total_task_completed' => 'required|integer',
+            'total_task_created' => 'required|integer',
         ];
 
         $data = $request->all();
@@ -63,7 +65,7 @@ class ProjectsController extends Controller
         }
 
         $roleId = $request->input('role_id');
-        $roleId= Roles::find($roleId);
+        $roleId= Role::find($roleId);
         if(!$roleId){
             return response()->json([
                 'status' => 'error',
@@ -72,7 +74,7 @@ class ProjectsController extends Controller
         }
 
         $jobId = $request->input('jobs_id');
-        $jobId= Jobs::find($jobId);
+        $jobId= Job::find($jobId);
         if(!$jobId){
             return response()->json([
                 'status' => 'error',
@@ -81,24 +83,30 @@ class ProjectsController extends Controller
         }
 
         $teamId = $request->input('team_id');
-        $teamId= Teams::find($teamId);
+        $teamId= Team::find($teamId);
         if(!$teamId){
             return response()->json([
                 'status' => 'error',
                 'message' => 'team not found'
             ], 404);
         }
-
-        $clientId = $request->input('client_id');
-        $clientId= Client::find($clientId);
-        if(!$clientId){
+        // $clientId = $request->input('client_id');
+        // $clientId= Client::find($clientId);
+        // if(!$clientId){
+        //     return response()->json([
+        //         'status' => 'error',
+        //         'message' => 'client not found'
+        //     ], 404);
+        // }
+        $pmId = $request->input('pm_id');
+        $pmId= Employees::find($pmId);
+        if(!$pmId){
             return response()->json([
                 'status' => 'error',
-                'message' => 'client not found'
+                'message' => 'pm not found'
             ], 404);
         }
-
-        $projects = Projects::create($data);
+        $projects = Project::create($data);
         return response()->json([
             'status' => 'success',
             'data' => $projects

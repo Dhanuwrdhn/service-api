@@ -7,18 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
-    protected $table = "mg_project";
+    protected $table = "mg_projects";
 
     protected $fillable = [
         'project_name',
         'role_id',
         'jobs_id',
         'team_id',
-        'client_id',
+        'pm_id',
         'start_date',
         'end_date',
         'project_status',
-        'total_task',
+        'total_task_created',
         'total_task_completed',
     ];
     protected $casts = [
@@ -38,12 +38,16 @@ class Project extends Model
     {
         return $this->hasMany('App\Models\Roles')->orderBy('id','ASC');
     }
-    public function client()
-    {
-        return $this->hasMany('App\Models\Client')->orderBy('id','ASC');
-    }
+    // public function client()
+    // {
+    //     return $this->hasMany('App\Models\Client')->orderBy('id','ASC');
+    // }
     public function tasks()
     {
         return $this->hasMany('App\Models\Tasks')->orderBy('id','ASC');
+    }
+    public function projectM()
+    {
+        return $this->hasMany('App\Models\Employees')->orderBy('id','ASC');
     }
 }
