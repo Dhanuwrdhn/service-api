@@ -203,6 +203,7 @@ class EmployeesController extends Controller
             'message' => 'employee deleted'
         ]);
     }
+    // login
     public function login(Request $request)
     {
     $credentials = $request->only('username', 'password');

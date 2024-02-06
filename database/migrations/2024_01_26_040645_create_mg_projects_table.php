@@ -15,7 +15,6 @@
             $table->id();
             $table->string('project_name');
             $table->unsignedBigInteger('assign_by'); // ID employee
-            $table->unsignedBigInteger('assign_to'); // ID employee
             $table->unsignedBigInteger('team_id');
             $table->unsignedBigInteger('role_id');
             $table->unsignedBigInteger('jobs_id');
@@ -31,7 +30,6 @@
             $table->foreign('jobs_id')->references('id')->on('mg_jobs')->onDelete('cascade');
             $table->foreign('team_id')->references('id')->on('mg_teams')->onDelete('cascade');
             $table->foreign('assign_by')->references('id')->on('mg_employee')->onDelete('cascade');
-            $table->foreign('assign_to')->references('id')->on('mg_employee')->onDelete('cascade');
         });
         }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Project;
+use App\Models\EmployeeProject;
 use App\Models\Job;
 use App\Models\Role;
 use App\Models\Team;
@@ -47,8 +48,6 @@ class ProjectsController extends Controller
         'role_id' => 'required|exists:mg_roles,id',
         'jobs_id' => 'required|exists:mg_jobs,id',
         'assign_by' => 'required|exists:mg_employee,id',
-        'assign_to' => 'required|array', // Ubah menjadi array
-        'assign_to.*' => 'exists:mg_employee,id', // Validasi setiap ID dalam array
         'start_date' => 'required|date',
         'end_date' => 'required|date',
         'project_status' => 'nullable|in:Ongoing,workingOnIt,Completed',
@@ -78,37 +77,36 @@ class ProjectsController extends Controller
         $assignBy = Employees::find($request->input('assign_by'));
 
         if (!$roles || !$jobs || !$teams || !$assignBy) {
-            throw new \Exception('Data terkait tidak ditemukan.');
+        throw new \Exception('Data terkait tidak ditemukan.');
         }
-
-        // Buat proyek
         $project = Project::create($data);
 
         // Proses assign to (contoh: string dipisahkan koma)
         $assigneesIds = $request->input('assign_to');
-        $project->employeeAsignees()->attach($assigneesIds);
+        // $project->employeeAsignees()->attach($assigneesIds);
+
 
         // Simpan ke mg_employee_project menggunakan model EmployeeProject
         foreach ($assigneesIds as $assigneeId) {
-            EmployeeProject::create([
-                'employee_id' => $assigneeId,
-                'project_id' => $project->id,
-            ]);
-        }
+        EmployeeProject::create([
+            'employee_id' => $assigneeId,
+            'project_id' => $project->id,
+        ]);
+    }
 
         DB::commit();
 
         return response()->json([
-            'status' => 'success',
-            'data' => $project
+        'status' => 'success',
+        'data' => $project
         ], 200);
 
     } catch (\Exception $e) {
         DB::rollBack();
 
         return response()->json([
-            'status' => 'error',
-            'message' => 'Gagal membuat proyek. ' . $e->getMessage()
+        'status' => 'error',
+        'message' => 'Gagal membuat proyek. ' . $e->getMessage()
         ], 500);
     }
 }

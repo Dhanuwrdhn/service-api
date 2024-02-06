@@ -14,7 +14,7 @@ class Project extends Model
         'role_id',
         'jobs_id',
         'team_id',
-        'pm_id',
+        'assign_by',
         'start_date',
         'end_date',
         'project_status',
