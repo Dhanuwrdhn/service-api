@@ -9,11 +9,28 @@ class EmployeeProject extends Model
 {
     protected $table = 'mg_employee_project';
 
-    public function employee()
+    protected $fillable = [
+        'employee_id',
+        'project_id',
+    ];
+
+    protected $hidden =[
+        'password'
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime:Y-m-d H:m:s',
+        'updated_at' => 'datetime:Y-m-d H:m:s'
+    ];
+
+  public function employee()
     {
-        return $this->belongsTo(Employee::class, 'employee_id');
+        return $this->belongsTo(Employees::class, 'employee_id');
     }
 
+    /**
+     * Mendapatkan data proyek yang terkait dengan entitas EmployeeProject.
+     */
     public function project()
     {
         return $this->belongsTo(Project::class, 'project_id');

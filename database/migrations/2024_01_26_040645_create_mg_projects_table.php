@@ -12,20 +12,27 @@
         public function up(): void
         {
             Schema::create('mg_projects', function (Blueprint $table) {
-                $table->id();
-                $table->string('project_name');
-                $table->foreignId('role_id')->constrained('mg_roles')->onDelete('cascade');
-                $table->foreignId('jobs_id')->constrained('mg_jobs')->onDelete('cascade');
-                $table->foreignId('team_id')->constrained('mg_teams')->onDelete('cascade');
-                $table->foreignId('pm_id')->constrained('mg_employee')->onDelete('cascade');
-                $table->datetime('start_date')->default(now()->toDateTimeString());
-                $table->datetime('end_date')->default(now()->toDateTimeString());
-                $table->enum('project_status', ['Ongoing', 'workingOnIt', 'Completed'])->nullable();
-                $table->string('percentage')->nullable();
-                $table->string('total_task_completed')->nullable();
-                $table->string('total_task_created')->nullable();
-                $table->timestamps();
-            });
+            $table->id();
+            $table->string('project_name');
+            $table->unsignedBigInteger('assign_by'); // ID employee
+            $table->unsignedBigInteger('assign_to'); // ID employee
+            $table->unsignedBigInteger('team_id');
+            $table->unsignedBigInteger('role_id');
+            $table->unsignedBigInteger('jobs_id');
+            $table->datetime('start_date')->default(now()->toDateTimeString());
+            $table->datetime('end_date')->default(now()->toDateTimeString());
+            $table->enum('project_status', ['Ongoing', 'workingOnIt', 'Completed'])->nullable();
+            $table->string('percentage')->nullable();
+            $table->string('total_task_completed')->nullable();
+            $table->string('total_task_created')->nullable();
+            $table->timestamps();
+
+            $table->foreign('role_id')->references('id')->on('mg_roles')->onDelete('cascade');
+            $table->foreign('jobs_id')->references('id')->on('mg_jobs')->onDelete('cascade');
+            $table->foreign('team_id')->references('id')->on('mg_teams')->onDelete('cascade');
+            $table->foreign('assign_by')->references('id')->on('mg_employee')->onDelete('cascade');
+            $table->foreign('assign_to')->references('id')->on('mg_employee')->onDelete('cascade');
+        });
         }
 
         /**

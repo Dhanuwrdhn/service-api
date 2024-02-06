@@ -63,7 +63,7 @@ class EmployeesController extends Controller
           'email' => 'required|email|unique:mg_employee,email',
           'username' => 'required|string',
           'password' => 'required|string|min:8',
-          'gender' => 'required|in:male,female',
+          'gender' => 'in:Male,Female',
           'religion' => 'string',
           'npwp_number' => 'string',
           'identity_number' => 'string',
@@ -176,7 +176,7 @@ class EmployeesController extends Controller
             }
         }
         $employee->password = Hash::make($request->input('password'));
-         $employee->fill($data);
+        $employee->fill($data);
         $employee->save();
 
         return response()->json([
@@ -204,7 +204,7 @@ class EmployeesController extends Controller
         ]);
     }
     public function login(Request $request)
-{
+    {
     $credentials = $request->only('username', 'password');
 
     $validator = Validator::make($credentials, [
@@ -227,9 +227,10 @@ class EmployeesController extends Controller
         $employee->update(['access_token' => $token]);
 
         return response()->json([
-            'status' => 'success',
+            'status' => 'login success',
             'token' => $token,
-            'employee' => $employee->toArray(), // Include user details if needed
+            'id_employee'=> $employee->id,// Include user details if needed
+            'username_employee'=> $employee->username,// Include user details if needed
         ]);
     } else {
         return response()->json([

@@ -12,18 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('mg_sub_tasks', function (Blueprint $table) {
-            $table->foreignId('task_id')->constrained('mg_tasks')->onDelete('cascade');
             $table->id();
             $table->string('subtask_name');
             $table->string('subtask_description')->nullable();
             $table->foreignId('task_id')->constrained('mg_tasks')->onDelete('cascade');
             $table->datetime('start_date')->default(now()->toDateTimeString());
             $table->datetime('end_date');
-            $table->enum('task_status', ['onPending','onReview', 'workingOnIt', 'Completed', ])->nullable();
-            $table->enum('task_submit_status', ['earlyFinish', 'finish', 'finish in delay','overdue' ])->nullable();
-            $table->string('percentage_subtask')->nullable();
-            $table->string('image-subtask')->nullable();
-
+            $table->enum('subtask_status', ['onPending','onReview', 'workingOnIt', 'Completed', ])->nullable();
+            $table->enum('subtask_submit_status', ['earlyFinish', 'finish', 'finish in delay','overdue' ])->nullable();
+            $table->string('subtask_percentage')->nullable();
+            $table->string('subtask_image')->nullable();
+            $table->timestamps();
         });
     }
 

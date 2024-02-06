@@ -46,6 +46,7 @@ Route::get('projects', [\App\Http\Controllers\ProjectsController::class, 'index'
 Route::post('projects', [\App\Http\Controllers\ProjectsController::class, 'create']);
 Route::put('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'update']);
 Route::delete('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'destroy']);
+Route::put('projects-status/{id}', [\App\Http\Controllers\ProjectsController::class, 'updateProjectStatus']);
 Route::get('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'show']);
 //API EMPLOYEE
 Route::post('employees', [\App\Http\Controllers\EmployeesController::class, 'create']);
@@ -53,13 +54,22 @@ Route::put('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 
 Route::get('employees', [\App\Http\Controllers\EmployeesController::class, 'index']);
 Route::get('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'show']);
 Route::delete('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'destroy']);
-
-// API EMPLOYEE PROJECT
-Route::get('employees-projects', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjects']);
 // API TASK
 Route::post('create-tasks', [\App\Http\Controllers\TasksController::class, 'create']);
 Route::get('show-tasks', [\App\Http\Controllers\TasksController::class, 'index']);
 Route::put('update-status/{id}', [\App\Http\Controllers\TasksController::class, 'updateStatus']);
+// API SUBTASKS
+Route::post('create-subtasks', [\App\Http\Controllers\SubTaskController::class, 'createSubTask']);
+Route::get('show-subtasks', [\App\Http\Controllers\SubTaskController::class, 'index']);
+Route::get('show-subtasks/{id}', [\App\Http\Controllers\SubTaskController::class, 'showSubTask']);
+
+// API TOTAL EMPLOYEE PROJECT
+Route::post('create-emproject', [\App\Http\Controllers\EmployeeProjectController::class, 'create']);
+Route::get('total-projects', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjects']);
+Route::get('total-projects/{id}', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjectById']);
+// API TOTAL EMPLOYEE TASK
+Route::get('total-tasks', [\App\Http\Controllers\EmployeeSubTaskController::class, 'showEmployeeTasks']);
+
 // API LOGIN
 Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']);
 // // refresh-token

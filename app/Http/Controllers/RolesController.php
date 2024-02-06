@@ -13,6 +13,12 @@ class RolesController extends Controller
     public function index()
     {
         $roles = Role::all();
+        if (!$roles) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'role not found'
+            ], 404);
+        }
         return response()->json([
             'status' => 'success',
             'data' => $roles

@@ -14,10 +14,10 @@ class SubTasks extends Model
         'task_id',
         'start_date',
         'end_date',
-        'task_status',
-        'task_submit_status',
-        'percentage_subtask',
-        'image-subtask',
+        'subtask_status',
+        'subtask_submit_status',
+        'subtask_percentage',
+        'subtask_image',
     ];
     protected $casts = [
         'start_date' => 'datetime:Y-m-d H:m:s',

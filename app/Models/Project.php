@@ -32,11 +32,11 @@ class Project extends Model
     }
     public function teams()
     {
-        return $this->hasMany('App\Models\Teams')->orderBy('id','ASC');
+        return $this->belongsTo('App\Models\Teams')->orderBy('id','ASC');
     }
     public function roles()
     {
-        return $this->hasMany('App\Models\Roles')->orderBy('id','ASC');
+        return $this->belongsTo('App\Models\Roles')->orderBy('id','ASC');
     }
     // public function client()
     // {
@@ -44,10 +44,10 @@ class Project extends Model
     // }
     public function tasks()
     {
-        return $this->hasMany('App\Models\Tasks')->orderBy('id','ASC');
+        return $this->belongsTo('App\Models\Tasks')->orderBy('id','ASC');
     }
-    public function projectM()
+    public function employeeAssignees()
     {
-        return $this->hasMany('App\Models\Employees')->orderBy('id','ASC');
+        return $this->belongsToMany(Employees::class, 'mg_employee_project', 'project_id', 'employee_id');
     }
 }
