@@ -182,9 +182,9 @@ class ProjectsController extends Controller
     }
 
     public function updateProjectStatus(Request $request, $id)
-    {
+{
     $rules = [
-        'project_status' => 'required|in:Ongoing,workingOnIt,Completed',
+        'project_status' => 'required|in:onPending,workingOnIt,Completed',
     ];
 
     $validator = Validator::make($request->all(), $rules);
@@ -205,7 +205,18 @@ class ProjectsController extends Controller
             throw new \Exception('Project not found');
         }
 
+        $oldStatus = $project->project_status; // Simpan status proyek sebelum pembaruan
+
         $project->update($request->only('project_status'));
+
+        // Bandingkan status sebelum dan setelah pembaruan
+        if ($oldStatus === $project->project_status) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'No changes detected in project status',
+                'data' => $project->toArray(),
+            ]);
+        }
 
         DB::commit();
 
@@ -222,6 +233,6 @@ class ProjectsController extends Controller
             'message' => 'Failed to update project: ' . $e->getMessage(),
         ], 500);
     }
+}
 
-    }
 }

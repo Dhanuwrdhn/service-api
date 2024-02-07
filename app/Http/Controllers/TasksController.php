@@ -22,7 +22,7 @@ class TasksController extends Controller
         ]);
     }
     //Create Tasks
-        public function createTask(Request $request)
+    public function createTask(Request $request)
 {
     $rules = [
         'task_name' => 'required|string',
@@ -68,6 +68,9 @@ class TasksController extends Controller
                 'employee_id' => $assignedToId,
             ]);
         }
+        // Increment total_task_created
+        $project->total_task_created += 1;
+        $project->save();
 
         DB::commit();
 
@@ -117,8 +120,25 @@ class TasksController extends Controller
             'data' => $task
         ], 200);
     }
-    //Delete Tasks
     //Show Tasks
+    }
+    //Delete Tasks
+     public function destroy($id)
+    {
+        $task = Task::find($id);
 
+        if (!$task) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'task not found'
+            ]);
+        }
+
+        $task->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'task deleted'
+        ]);
     }
 }
