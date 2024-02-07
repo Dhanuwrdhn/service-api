@@ -15,8 +15,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('employee_id');
             $table->unsignedBigInteger('tasks_id');
+            $table->unsignedBigInteger('project_id');
 
             // Menambah foreign key ke mg_project
+            $table->foreign('project_id')->references('id')->on('mg_projects')->onDelete('cascade');
+            // Menambah foreign key ke mg_tasks
             $table->foreign('tasks_id')->references('id')->on('mg_tasks')->onDelete('cascade');
 
             // Menambah foreign key ke mg_employee

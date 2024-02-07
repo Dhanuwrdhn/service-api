@@ -55,7 +55,7 @@ Route::get('employees', [\App\Http\Controllers\EmployeesController::class, 'inde
 Route::get('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'show']);
 Route::delete('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'destroy']);
 // API TASK
-Route::post('create-tasks', [\App\Http\Controllers\TasksController::class, 'create']);
+Route::post('create-tasks', [\App\Http\Controllers\TasksController::class, 'createTask']);
 Route::get('show-tasks', [\App\Http\Controllers\TasksController::class, 'index']);
 Route::put('update-status/{id}', [\App\Http\Controllers\TasksController::class, 'updateStatus']);
 // API SUBTASKS

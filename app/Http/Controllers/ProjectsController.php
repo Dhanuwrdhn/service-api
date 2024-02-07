@@ -50,7 +50,7 @@ class ProjectsController extends Controller
         'assign_by' => 'required|exists:mg_employee,id',
         'start_date' => 'required|date',
         'end_date' => 'required|date',
-        'project_status' => 'nullable|in:Ongoing,workingOnIt,Completed',
+        'project_status' => 'nullable|in:onPending,workingOnIt,Completed',
         'percentage' => 'nullable|string',
         'total_task_completed' => 'nullable|string',
         'total_task_created' => 'nullable|string',
@@ -111,85 +111,63 @@ class ProjectsController extends Controller
     }
 }
     // update
-    public function update(Request $request, $id){
-         $rules=[
-            'project_name' => 'required|string',
-            'role_id' => 'required',
-            'jobs_id' => 'required',
-            'team_id' => 'required',
-            'client_id' => 'required',
-            'start_date' => 'date',
-            'end_date' => 'date',
-            'percentage'=>'string',
-            'project_status' => 'required|in:Ongoing,workingOnIt,Completed',
-            'total_task_completed' => 'string',
-            'total_task_created' => 'string',
-        ];
-        $data = $request->all();
+  public function update(Request $request, $id)
+{
+    $rules = [
+        'project_name' => 'required|string',
+        'team_id' => 'required|exists:mg_teams,id',
+        'role_id' => 'required|exists:mg_roles,id',
+        'jobs_id' => 'required|exists:mg_jobs,id',
+        'assign_by' => 'required|exists:mg_employee,id',
+        'start_date' => 'required|date',
+        'end_date' => 'required|date',
+        'project_status' => 'nullable|in:Ongoing,workingOnIt,Completed',
+        'percentage' => 'nullable|string',
+        'total_task_completed' => 'nullable|string',
+        'total_task_created' => 'nullable|string',
+    ];
 
-        $validator = Validator::make($data, $rules);
+    $validator = Validator::make($request->all(), $rules);
 
-        if ($validator->fails()){
-            return response()->json([
-                'status' => 'error',
-                'message' => $validator->errors()
-            ], 400);
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $validator->errors()
+        ], 400);
+    }
+
+    try {
+        DB::beginTransaction();
+
+        $project = Project::find($id);
+
+        if (!$project) {
+            throw new \Exception('Proyek tidak ditemukan.');
         }
-        $projects = Projects::find($id);
-        if (!$projects) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'project not found'
-            ], 404);
-        }
-        $roleId = $request->input('role_id');
-        if ($roleId) {
-            $roleId = Roles::find($roleId);
-            if (!$roleId) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'roles not found'
-                ], 404);
-            }
-        }
-        $jobId = $request->input('jobs_id');
-        if ($jobId) {
-            $jobId = Jobs::find($jobId);
-            if (!$jobId) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'jobs not found'
-                ], 404);
-            }
-        }
-        $teamId = $request->input('team_id');
-        if ($teamId) {
-            $teamId = Teams::find($teamId);
-            if (!$teamId) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'teams not found'
-                ], 404);
-            }
-        }
-        $clientId = $request->input('client_id');
-        if ($clientId) {
-            $clientId = Client::find($clientId);
-            if (!$clientId) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'client not found'
-                ], 404);
-            }
-        }
-         $projects->fill($data);
-        $projects->save();
+
+        $project->update($request->all());
+
+        // Update assignees (contoh: string dipisahkan koma)
+        $assigneesIds = $request->input('assign_to', []);
+        $project->employeeAssignees()->sync($assigneesIds);
+
+        DB::commit();
 
         return response()->json([
             'status' => 'success',
-            'data' => $projects
-        ]);
+            'data' => $project
+        ], 200);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Gagal memperbarui proyek. ' . $e->getMessage()
+        ], 500);
     }
+}
+
 
     public function destroy($id)
     {
@@ -203,28 +181,47 @@ class ProjectsController extends Controller
         $projects->delete();
     }
 
-    public function updateProjectStatus(Request $request, $id){
-        $rules = [
-          'project_status' => 'required|in:Ongoing,workingOnIt,Completed',
-        ];
-        $data = $request->only('project_status');
-        $project = Project::find($id);
+    public function updateProjectStatus(Request $request, $id)
+    {
+    $rules = [
+        'project_status' => 'required|in:Ongoing,workingOnIt,Completed',
+    ];
 
-    if (!$project) {
+    $validator = Validator::make($request->all(), $rules);
+
+    if ($validator->fails()) {
         return response()->json([
             'status' => 'error',
-            'message' => 'Project not found',
-        ], 404);
+            'message' => $validator->errors(),
+        ], 400);
     }
 
-    // Lanjutkan dengan logika pembaruan setelah memastikan $project bukan null
-    $project->update($data);
+    try {
+        DB::beginTransaction();
 
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Project updated successfully',
-        'data' => $project->toArray(),
-    ]);
+        $project = Project::find($id);
+
+        if (!$project) {
+            throw new \Exception('Project not found');
+        }
+
+        $project->update($request->only('project_status'));
+
+        DB::commit();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Project updated successfully',
+            'data' => $project->toArray(),
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to update project: ' . $e->getMessage(),
+        ], 500);
     }
 
+    }
 }

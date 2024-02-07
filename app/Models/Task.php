@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\belongsTo;
 
 class Task extends Model
 {
@@ -14,8 +16,7 @@ class Task extends Model
         'task_description',
         'start_date',
         'end_date',
-        'assigned_by',
-        'assigned_to',
+        'assign_by',
         'percentage_task',
         'total_subtask_completed',
         'task_status',
@@ -27,6 +28,14 @@ class Task extends Model
     ];
     public function project()
     {
-        return $this->belongsTo(Project::class, 'project_id');
+        return $this->belongsToMany(Project::class, 'mg_projects', 'project_id');
+    }
+    public function employee()
+    {
+        return $this->belongsToMany(Employees::class, 'mg_employee', 'employee_id');
+    }
+    public function employeeAssignees()
+    {
+        return $this->belongsToMany(Employees::class, 'mg_employee_tasks', 'tasks_id', 'employee_id');
     }
 }

@@ -28,15 +28,15 @@ class Project extends Model
 
     public function jobs()
     {
-        return $this->belongsTo('App\Models\Jobs')->orderBy('id','ASC');
+        return $this->belongsTo('App\Models\Job')->orderBy('id','ASC');
     }
     public function teams()
     {
-        return $this->belongsTo('App\Models\Teams')->orderBy('id','ASC');
+        return $this->belongsTo('App\Models\Team')->orderBy('id','ASC');
     }
     public function roles()
     {
-        return $this->belongsTo('App\Models\Roles')->orderBy('id','ASC');
+        return $this->belongsTo('App\Models\Role')->orderBy('id','ASC');
     }
     // public function client()
     // {
@@ -44,7 +44,7 @@ class Project extends Model
     // }
     public function tasks()
     {
-        return $this->belongsTo('App\Models\Tasks')->orderBy('id','ASC');
+        return $this->belongsTo('App\Models\Task')->orderBy('id','ASC');
     }
     public function employeeAssignees()
     {

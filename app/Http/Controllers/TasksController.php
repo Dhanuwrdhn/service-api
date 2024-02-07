@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\Employees;
+use App\Models\EmployeeTasks;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class TasksController extends Controller
@@ -19,45 +22,69 @@ class TasksController extends Controller
         ]);
     }
     //Create Tasks
-    public function create(Request $request)
-    {
-        // Add code here to create tasks
-        $rules = [
-            'project_id' => 'required',
-            'task_name' => 'required',
-            'task_description' => 'required',
-            'start_date' => 'required',
-            'end_date' => 'required',
-            'assigned_by' => 'required',
-            'assigned_to' => 'required',
-            'percentage_task' => 'string',
-            'total_subtask_completed' => 'string',
-            'task_status' => 'required',
-        ];
-        $data = $request->all();
-        $validator = Validator::make($data, $rules);
+        public function createTask(Request $request)
+{
+    $rules = [
+        'task_name' => 'required|string',
+        'task_description' => 'nullable|string',
+        'start_date' => 'required|date',
+        'end_date' => 'required|date',
+        'assign_by' => 'required|exists:mg_employee,id',
+        'percentage_task' => 'nullable|string',
+        'total_subtask_completed' => 'nullable|string',
+        'task_status' => 'required|in:onPending,onReview,workingOnIt,Completed', // Perbaiki sintaks in
+    ];
+    $data = $request->all();
+    $validator = Validator::make($request->all(), $rules);
 
-        if ($validator->fails()){
-            return response()->json([
-                'status' => 'error',
-                'message' => $validator->errors()
-            ], 400);
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $validator->errors()
+        ], 400);
+    }
+
+    try {
+        DB::beginTransaction();
+
+        // Retrieve project and employee
+        $assignBy = Employees::find($request->input('assign_by')); // Ubah ke Employee
+
+        // Ensure project and employee exist
+        if ( !$assignBy) {
+            throw new \Exception('Project or assignBy not found.');
         }
-        $projectId = $request->input('project_id');
-        $project= Project::find($projectId);
-        if(!$project){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'project not found'
-            ], 404);
+
+        // Create the task
+        $task = Task::create($data, $rules);
+
+        // Assign the task to employees
+        $project = Project::find($request->input('project_id'));
+        $assignedToIds = $request->input('assign_to');
+        foreach ($assignedToIds as $assignedToId) {
+            EmployeeTasks::create([
+                'tasks_id' => $task->id,
+                'project_id' => $project->id,
+                'employee_id' => $assignedToId,
+            ]);
         }
-        $project->save();
-        $tasks = Task::create($data);
+
+        DB::commit();
+
         return response()->json([
             'status' => 'success',
-            'data' => $tasks
+            'data' => $task
         ], 200);
-        }
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to create task. ' . $e->getMessage()
+        ], 500);
+    }
+}
+
     //Update status Tasks
     public function updateStatus(Request $request, $id){
         $rules = [

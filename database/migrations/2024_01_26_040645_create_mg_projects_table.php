@@ -20,7 +20,7 @@
             $table->unsignedBigInteger('jobs_id');
             $table->datetime('start_date')->default(now()->toDateTimeString());
             $table->datetime('end_date')->default(now()->toDateTimeString());
-            $table->enum('project_status', ['Ongoing', 'workingOnIt', 'Completed'])->nullable();
+            $table->enum('project_status', ['onPending', 'workingOnit', 'Completed'])->nullable();
             $table->string('percentage')->nullable();
             $table->string('total_task_completed')->nullable();
             $table->string('total_task_created')->nullable();
