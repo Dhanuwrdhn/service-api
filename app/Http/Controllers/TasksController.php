@@ -48,10 +48,11 @@ class TasksController extends Controller
         DB::beginTransaction();
 
         // Retrieve project and employee
+        $project = Project::find($request->input('project_id'));
         $assignBy = Employees::find($request->input('assign_by')); // Ubah ke Employee
 
         // Ensure project and employee exist
-        if ( !$assignBy) {
+        if (!$project || !$assignBy) {
             throw new \Exception('Project or assignBy not found.');
         }
 
@@ -59,7 +60,6 @@ class TasksController extends Controller
         $task = Task::create($data, $rules);
 
         // Assign the task to employees
-        $project = Project::find($request->input('project_id'));
         $assignedToIds = $request->input('assign_to');
         foreach ($assignedToIds as $assignedToId) {
             EmployeeTasks::create([

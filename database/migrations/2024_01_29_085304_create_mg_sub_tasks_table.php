@@ -13,16 +13,21 @@ return new class extends Migration
     {
         Schema::create('mg_sub_tasks', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('task_id');
             $table->string('subtask_name');
             $table->string('subtask_description')->nullable();
-            $table->foreignId('task_id')->constrained('mg_tasks')->onDelete('cascade');
+            $table->unsignedBigInteger('assign_by');
             $table->datetime('start_date')->default(now()->toDateTimeString());
             $table->datetime('end_date');
-            $table->enum('subtask_status', ['onPending','onReview', 'workingOnIt', 'Completed', ])->nullable();
+            $table->enum('subtask_status', ['onPending','onReview', 'workingOnIt', 'Completed', ])->default('onPending');
             $table->enum('subtask_submit_status', ['earlyFinish', 'finish', 'finish in delay','overdue' ])->nullable();
             $table->string('subtask_percentage')->nullable();
             $table->string('subtask_image')->nullable();
             $table->timestamps();
+
+            $table->foreign('assign_by')->references('id')->on('mg_employee')->onDelete('cascade');
+            $table->foreign('task_id')->references('id')->on('mg_tasks')->onDelete('cascade');
+
         });
     }
 
