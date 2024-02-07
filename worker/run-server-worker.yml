@@ -1,0 +1,9 @@
+apps:
+  - name: artisan-serve
+    script: artisan
+    interpreter: php
+    args:
+      - serve
+      - --host=192.178.3.179
+    exec_mode: fork
+    instances: 1
