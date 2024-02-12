@@ -61,7 +61,7 @@ class Employees extends Model
     }
     public function projects()
     {
-        return $this->hasMany('App\Models\Project')->orderBy('id','ASC');
+        return $this->belongsToMany(Project::class, 'mg_employee_project', 'employee_id', 'project_id');
     }
     public function client()
     {

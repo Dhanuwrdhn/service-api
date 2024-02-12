@@ -13,18 +13,20 @@ return new class extends Migration
     {
         Schema::create('mg_tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->constrained('mg_project')->onDelete('cascade');
+            $table->unsignedBigInteger('project_id');
             $table->string('task_name');
             $table->string('task_description')->nullable();
+            $table->unsignedBigInteger('assign_by');
             $table->datetime('start_date')->default(now()->toDateTimeString());
             $table->datetime('end_date');
-            $table->string('assigned_by')->nullable();
-            $table->string('assigned_to')->nullable();
             $table->string('percentage_task')->nullable();
+            $table->string('total_subtask_created')->nullable();
             $table->string('total_subtask_completed')->nullable();
             $table->enum('task_status', ['onPending','onReview', 'workingOnIt', 'Completed', ])->nullable();
-            $table->enum('task_submit_status', ['earlyFinish', 'finish', 'finish in delay','overdue' ])->nullable();
             $table->timestamps();
+
+            $table->foreign('assign_by')->references('id')->on('mg_employee')->onDelete('cascade');
+            $table->foreign('project_id')->references('id')->on('mg_projects')->onDelete('cascade');
         });
     }
 

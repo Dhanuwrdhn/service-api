@@ -14,7 +14,7 @@ class Project extends Model
         'role_id',
         'jobs_id',
         'team_id',
-        'pm_id',
+        'assign_by',
         'start_date',
         'end_date',
         'project_status',
@@ -28,15 +28,15 @@ class Project extends Model
 
     public function jobs()
     {
-        return $this->belongsTo('App\Models\Jobs')->orderBy('id','ASC');
+        return $this->belongsTo('App\Models\Job')->orderBy('id','ASC');
     }
     public function teams()
     {
-        return $this->hasMany('App\Models\Teams')->orderBy('id','ASC');
+        return $this->belongsTo('App\Models\Team')->orderBy('id','ASC');
     }
     public function roles()
     {
-        return $this->hasMany('App\Models\Roles')->orderBy('id','ASC');
+        return $this->belongsTo('App\Models\Role')->orderBy('id','ASC');
     }
     // public function client()
     // {
@@ -44,10 +44,10 @@ class Project extends Model
     // }
     public function tasks()
     {
-        return $this->hasMany('App\Models\Tasks')->orderBy('id','ASC');
+        return $this->belongsTo('App\Models\Task')->orderBy('id','ASC');
     }
-    public function projectM()
+    public function employeeAssignees()
     {
-        return $this->hasMany('App\Models\Employees')->orderBy('id','ASC');
+        return $this->belongsToMany(Employees::class, 'mg_employee_project', 'project_id', 'employee_id');
     }
 }
