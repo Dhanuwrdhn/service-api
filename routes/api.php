@@ -64,11 +64,11 @@ Route::get('show-subtasks', [\App\Http\Controllers\SubTaskController::class, 'in
 Route::get('show-subtasks/{id}', [\App\Http\Controllers\SubTaskController::class, 'showSubTask']);
 
 // API TOTAL EMPLOYEE PROJECT
-Route::post('create-emproject', [\App\Http\Controllers\EmployeeProjectController::class, 'create']);
-Route::get('total-projects', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjects']);
-Route::get('total-projects/{id}', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjectById']);
+Route::get('total-employeeprojects', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjects']);
+Route::get('total-employeeprojects/{id}', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjectById']);
 // API TOTAL EMPLOYEE TASK
-Route::get('total-tasks', [\App\Http\Controllers\EmployeeSubTaskController::class, 'showEmployeeTasks']);
+Route::get('total-employeetasks', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasks']);
+Route::get('total-employeetasks/{id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasksbyId']);
 
 // API LOGIN
 Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']);
