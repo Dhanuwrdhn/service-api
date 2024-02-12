@@ -31,6 +31,7 @@ class TasksController extends Controller
         'end_date' => 'required|date',
         'assign_by' => 'required|exists:mg_employee,id',
         'percentage_task' => 'nullable|string',
+        'total_subtask_created' => 'nullable|string',
         'total_subtask_completed' => 'nullable|string',
         'task_status' => 'required|in:onPending,onReview,workingOnIt,Completed', // Perbaiki sintaks in
     ];
@@ -89,39 +90,49 @@ class TasksController extends Controller
 }
 
     //Update status Tasks
-    public function updateStatus(Request $request, $id){
-        $rules = [
-            'task_status' => 'required',
-        ];
-        $data = $request->only('task_status');
-        $task = Task::find($id);
-        $validator = Validator::make($data, $rules);
+   public function updateStatus(Request $request, $id) {
+    $rules = [
+        'task_status' => 'required',
+    ];
 
-        if ($validator->fails()){
-            return response()->json([
-                'status' => 'error',
-                'message' => $validator->errors()
-            ], 400);
-        }
+    $validator = Validator::make($request->all(), $rules);
 
-        $task->update($data);
-        // Check if the task status is Completed, then update mg_projects
-        if ($data['task_status'] == 'Completed') {
-            $project = Project::find($task->project_id);
-
-            if ($project) {
-                $project->increment('total_task_completed');
-                // Jika Anda juga ingin mengupdate kolom lain, sesuaikan di sini
-                // $project->update(['total_task_completed' => $project->total_task_completed + 1]);
-            }
-
+    if ($validator->fails()) {
         return response()->json([
-            'status' => 'success',
-            'data' => $task
-        ], 200);
+            'status' => 'error',
+            'message' => $validator->errors()
+        ], 400);
     }
+
+    $task = Task::find($id);
+
+    if (!$task) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Task not found'
+        ], 404);
+    }
+
+    $data = $request->only('task_status');
+
+    $task->update($data);
+
+    // Check if the task status is Completed, then update mg_projects
+    if ($data['task_status'] == 'Completed') {
+        $project = Project::find($task->project_id);
+
+        if ($project) {
+            $project->increment('total_task_completed');
+        }
+    }
+
+    return response()->json([
+        'status' => 'success',
+        'data' => $task
+    ], 200);
+}
+
     //Show Tasks
-    }
     //Delete Tasks
      public function destroy($id)
     {

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->datetime('start_date')->default(now()->toDateTimeString());
             $table->datetime('end_date');
             $table->string('percentage_task')->nullable();
+            $table->string('total_subtask_created')->nullable();
             $table->string('total_subtask_completed')->nullable();
             $table->enum('task_status', ['onPending','onReview', 'workingOnIt', 'Completed', ])->nullable();
             $table->timestamps();

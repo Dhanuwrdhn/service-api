@@ -18,6 +18,7 @@ class Task extends Model
         'end_date',
         'assign_by',
         'percentage_task',
+        'total_subtask_created',
         'total_subtask_completed',
         'task_status',
         'task_submit_status',
