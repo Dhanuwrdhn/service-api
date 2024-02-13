@@ -12,4 +12,10 @@ class Attendance extends Model
     protected $table = 'mg_attendance';
     protected $fillable = ['employee_id', 'checkin', 'checkout', 'isattended'];
 
+    protected $casts = [
+        'created_at' => 'datetime:Y-m-d H:m:s',
+        'updated_at' => 'datetime:Y-m-d H:m:s'
+    ];
+
+    
 }
