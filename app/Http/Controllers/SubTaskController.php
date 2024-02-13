@@ -45,6 +45,7 @@ class SubTaskController extends Controller
         'subtask_description' => 'string|nullable',
         'start_date' => 'required|date',
         'end_date' => 'required|date',
+        'assign_by'=>'required|date',
         'subtask_status' => 'in:onPending,onReview,workingOnIt,Completed',
         'subtask_submit_status' => 'in:earlyFinish,finish,finish in delay,overdue',
         'subtask_percentage' => 'required|string',
@@ -73,7 +74,7 @@ class SubTaskController extends Controller
             ], 404);
         }
 
-        $subtask = SubTask::create($validator->validated());
+        $subtask = SubTasks::create($validator->validated());
 
         DB::commit();
 

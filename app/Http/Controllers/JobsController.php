@@ -37,7 +37,7 @@ class JobsController extends Controller
     // create
     public function create(Request $request){
         $rules=[
-            'job_name' => 'required|String',
+            'job_name' => 'required|String|unique:mg_jobs,job_name',
             'description' => 'String',
         ];
         $data = $request->all();

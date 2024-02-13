@@ -13,7 +13,6 @@ class AttendanceController extends Controller
     public function attendanceCheckIn(Request $request){
         try{
 
-            
             // Receive input employee_id
             $employee_id = $request->input('employee_id');
 
@@ -37,7 +36,7 @@ class AttendanceController extends Controller
             // Create a new entry in the attendance table with checkin timestamp
             $newAttendance = Attendance::create([
                 'employee_id' => $employee_id,
-                'checkin' => new \DateTime(),
+                'checkin' => (new \DateTime())->format('Y-m-d H:i:s'),
                 'checkout' => null,
                 'isattended' => true,
             ]);
@@ -53,39 +52,53 @@ class AttendanceController extends Controller
     }
 
     //attendance leave tapping (checkout)
-    public function attendanceCheckOut(Request $request){
-        try{
-            $employee_id = $request->input('employee_id');
-            $employee = Employees::find($employee_id);
-            if (!$employee) {
-                return response()->json(['message' => 'Employee not found'], 404);
-            }
+    public function attendanceCheckOut(Request $request)
+{
+    try {
+        $employee_id = $request->input('employee_id');
 
-            //check if already checkin 
-            $today =  (new \DateTime())->setTime(0, 0);
-            $attendance = Attendance::where('employee_id', $employee_id)
-                ->whereDate('checkin', $today)
-                ->first();
-
-
-            if (!$attendance) {
-                return response()->json(['message' => 'Employee did not checked in today'], 400);
-            }
-
-            //update the checkout to 1
-            $updatedAttendance = Attendance::where('employee_id', $employee_id)->update(['checkout' => new \DateTime()]);
-            
-            return response()->json(['message' => 'Check-out successful', 'attendance' => $updatedAttendance], 201);
-
-        }catch (\Exception $e) {
-
-            return response()->json([
-            'status' => 'error',
-            'message' => 'Gagal melakukan checkout' . $e->getMessage()
-            ], 500);
+        $employee = Employees::find($employee_id);
+        if (!$employee) {
+            return response()->json(['message' => 'Employee not found'], 404);
         }
 
+        // Check if already checkout
+        $attendance = Attendance::where('employee_id', $employee_id)
+            ->whereDate('checkout', (new \DateTime())->setTime(0, 0))
+            ->first();
+
+        if ($attendance) {
+            return response()->json(['message' => 'Employee has already checked out today'], 400);
+        }
+
+        // Check if already checkin
+        $today = (new \DateTime())->setTime(0, 0);
+        $attendance = Attendance::where('employee_id', $employee_id)
+            ->whereDate('checkin', $today)
+            ->first();
+
+        if (!$attendance) {
+            return response()->json(['message' => 'Employee did not check in today'], 400);
+        }
+
+        // Update the checkout to current time
+        $checkoutTime = new \DateTime();
+        $updatedAttendance = Attendance::where('employee_id', $employee_id)->update(['checkout' => $checkoutTime]);
+
+        // Hitung waktu antara check-in dan check-out
+        $checkinTime = new \DateTime($attendance->checkin);
+        $duration = $checkoutTime->diff($checkinTime)->format('%H:%I:%S');
+
+        return response()->json(['message' => 'Check-out successful', 'duration' => $duration], 201);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Gagal melakukan checkout: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 
 
 }
+

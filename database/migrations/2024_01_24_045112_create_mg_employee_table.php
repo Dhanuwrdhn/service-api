@@ -16,12 +16,12 @@ return new class extends Migration
             $table->foreignId('role_id')->constrained('mg_roles')->onDelete('cascade');
             $table->foreignId('jobs_id')->constrained('mg_jobs')->onDelete('cascade');
             $table->foreignId('team_id')->constrained('mg_teams')->onDelete('cascade');
-            $table->String('employee_name');
+            $table->String('employee_name')->unique();
             $table->date('date_of_birth')->nullable();
             $table->String('age')->nullable();
             $table->string('mobile_number')->nullable();
             $table->string('email');
-            $table->string('username');
+            $table->string('username')->unique();
             $table->string('password');
             $table->enum ('gender', ['Male', 'Female'])->nullable();
             $table->string('religion')->nullable();

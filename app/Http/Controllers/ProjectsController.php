@@ -41,7 +41,7 @@ class ProjectsController extends Controller
         ]);
     }
     public function create(Request $request)
-    {
+{
     $rules = [
         'project_name' => 'required|string',
         'team_id' => 'required|exists:mg_teams,id',
@@ -54,6 +54,8 @@ class ProjectsController extends Controller
         'percentage' => 'nullable|string',
         'total_task_completed' => 'nullable|string',
         'total_task_created' => 'nullable|string',
+        'assign_to' => 'required|array', // Tambahkan validasi untuk assign_to sebagai array
+        'assign_to.*' => 'exists:mg_employee,id', // Tambahkan validasi untuk setiap item di assign_to
     ];
 
     $data = $request->all();
@@ -77,39 +79,44 @@ class ProjectsController extends Controller
         $assignBy = Employees::find($request->input('assign_by'));
 
         if (!$roles || !$jobs || !$teams || !$assignBy) {
-        throw new \Exception('Data terkait tidak ditemukan.');
+            throw new \Exception('Data terkait tidak ditemukan.');
         }
+
         $project = Project::create($data);
 
-        // Proses assign to (contoh: string dipisahkan koma)
+        // Proses assign to
         $assigneesIds = $request->input('assign_to');
-        // $project->employeeAsignees()->attach($assigneesIds);
 
-
-        // Simpan ke mg_employee_project menggunakan model EmployeeProject
+        // Memeriksa apakah setiap assign_to ada dalam data karyawan (employee)
         foreach ($assigneesIds as $assigneeId) {
-        EmployeeProject::create([
-            'employee_id' => $assigneeId,
-            'project_id' => $project->id,
-        ]);
-    }
+            if (!Employees::find($assigneeId)) {
+                throw new \Exception("Karyawan dengan ID $assigneeId tidak ditemukan.");
+            }
+
+            // Simpan ke mg_employee_project menggunakan model EmployeeProject
+            EmployeeProject::create([
+                'employee_id' => $assigneeId,
+                'project_id' => $project->id,
+            ]);
+        }
 
         DB::commit();
 
         return response()->json([
-        'status' => 'success',
-        'data' => $project
+            'status' => 'success',
+            'data' => $project
         ], 200);
 
     } catch (\Exception $e) {
         DB::rollBack();
 
         return response()->json([
-        'status' => 'error',
-        'message' => 'Gagal membuat proyek. ' . $e->getMessage()
+            'status' => 'error',
+            'message' => 'Gagal membuat proyek. ' . $e->getMessage()
         ], 500);
     }
 }
+
     // update
   public function update(Request $request, $id)
 {
