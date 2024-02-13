@@ -12,6 +12,7 @@ class SubTasks extends Model
         'subtask_name',
         'subtask_description',
         'task_id',
+        'assign_by',
         'start_date',
         'end_date',
         'subtask_status',
@@ -23,9 +24,22 @@ class SubTasks extends Model
         'start_date' => 'datetime:Y-m-d H:m:s',
         'end_date' => 'datetime:Y-m-d H:m:s'
     ];
+
     public function Tasks()
     {
         return $this->belongsTo(Task::class, 'task_id');
+    }
+    public function project()
+    {
+        return $this->belongsToMany(Project::class, 'mg_projects', 'project_id');
+    }
+    public function employee()
+    {
+        return $this->belongsToMany(Employees::class, 'mg_employee', 'employee_id');
+    }
+    public function employeeAssignees()
+    {
+        return $this->belongsToMany(Employees::class, 'mg_employee_subtasks', 'tasks_id', 'employee_id');
     }
 }
 

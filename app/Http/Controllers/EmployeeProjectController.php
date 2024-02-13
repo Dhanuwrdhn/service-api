@@ -50,6 +50,7 @@ class EmployeeProjectController extends Controller
         'employeeProjects' => $employeeProjects
     ]);
     }
+    
     public function create(Request $request)
     {
         $rules = [

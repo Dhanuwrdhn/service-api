@@ -54,6 +54,11 @@ Route::put('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 
 Route::get('employees', [\App\Http\Controllers\EmployeesController::class, 'index']);
 Route::get('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'show']);
 Route::delete('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'destroy']);
+
+//API ATTENDANCE
+Route::post('attendance', [\App\Http\Controllers\AttendanceController::class, 'attendanceCheckIn']);
+Route::put('attendance', [\App\Http\Controllers\AttendanceController::class, 'attendanceCheckOut']);
+
 // API TASK
 Route::post('create-tasks', [\App\Http\Controllers\TasksController::class, 'createTask']);
 Route::get('show-tasks', [\App\Http\Controllers\TasksController::class, 'index']);

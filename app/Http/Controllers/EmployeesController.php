@@ -61,7 +61,7 @@ class EmployeesController extends Controller
           'age' => 'string',
           'mobile_number' => 'string',
           'email' => 'required|email|unique:mg_employee,email',
-          'username' => 'required|string',
+          'username' => 'required|string|unique:mg_employee,username',
           'password' => 'required|string|min:8',
           'gender' => 'in:Male,Female',
           'religion' => 'string',

@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\Employees;
 use App\Models\EmployeeTasks;
+use App\Models\EmployeeProject;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -24,20 +25,37 @@ class TasksController extends Controller
     //Create Tasks
     public function createTask(Request $request)
 {
+    // Aturan validasi untuk input
     $rules = [
         'task_name' => 'required|string',
         'task_description' => 'nullable|string',
         'start_date' => 'required|date',
         'end_date' => 'required|date',
-        'assign_by' => 'required|exists:mg_employee,id',
+        'assign_by' => 'required|exists:mg_employee,id', // Pastikan assign_by adalah ID karyawan yang valid
+        'assign_to' => 'required|array', // assign_to harus berupa array
+        'assign_to.*' => [ // setiap item di assign_to harus ada dalam mg_employee_project dan terkait dengan proyek yang sesuai
+            'exists:mg_employee_project,employee_id',
+            function ($attribute, $value, $fail) use ($request) {
+                // Validasi tambahan: pastikan karyawan terkait dengan proyek yang sesuai
+                $projectId = $request->input('project_id');
+                $employeeProject = EmployeeProject::where('employee_id', $value)
+                                                   ->where('project_id', $projectId)
+                                                   ->exists();
+                if (!$employeeProject) {
+                    $fail("Employee with ID $value is not associated with the specified project.");
+                }
+            },
+        ],
         'percentage_task' => 'nullable|string',
         'total_subtask_created' => 'nullable|string',
         'total_subtask_completed' => 'nullable|string',
-        'task_status' => 'required|in:onPending,onReview,workingOnIt,Completed', // Perbaiki sintaks in
+        'task_status' => 'required|in:onPending,onReview,workingOnIt,Completed', // Pastikan task_status di antara nilai yang valid
     ];
-    $data = $request->all();
+
+    // Validasi input
     $validator = Validator::make($request->all(), $rules);
 
+    // Jika validasi gagal, kembalikan respon dengan pesan error
     if ($validator->fails()) {
         return response()->json([
             'status' => 'error',
@@ -46,21 +64,22 @@ class TasksController extends Controller
     }
 
     try {
+        // Memulai transaksi database
         DB::beginTransaction();
 
-        // Retrieve project and employee
+        // Mendapatkan proyek dan karyawan yang terlibat
         $project = Project::find($request->input('project_id'));
         $assignBy = Employees::find($request->input('assign_by')); // Ubah ke Employee
 
-        // Ensure project and employee exist
+        // Pastikan proyek dan karyawan yang terlibat ditemukan
         if (!$project || !$assignBy) {
             throw new \Exception('Project or assignBy not found.');
         }
 
-        // Create the task
-        $task = Task::create($data, $rules);
+        // Membuat tugas
+        $task = Task::create($request->all());
 
-        // Assign the task to employees
+        // Mengassign tugas kepada karyawan
         $assignedToIds = $request->input('assign_to');
         foreach ($assignedToIds as $assignedToId) {
             EmployeeTasks::create([
@@ -69,25 +88,31 @@ class TasksController extends Controller
                 'employee_id' => $assignedToId,
             ]);
         }
-        // Increment total_task_created
+
+        // Menambahkan jumlah tugas yang dibuat ke dalam proyek
         $project->total_task_created += 1;
         $project->save();
 
+        // Commit transaksi database
         DB::commit();
 
+        // Respon berhasil
         return response()->json([
             'status' => 'success',
             'data' => $task
         ], 200);
     } catch (\Exception $e) {
+        // Rollback transaksi database jika terjadi kesalahan
         DB::rollBack();
 
+        // Respon dengan pesan error
         return response()->json([
             'status' => 'error',
             'message' => 'Failed to create task. ' . $e->getMessage()
         ], 500);
     }
 }
+
 
     //Update status Tasks
    public function updateStatus(Request $request, $id) {
