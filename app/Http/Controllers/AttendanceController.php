@@ -99,6 +99,69 @@ class AttendanceController extends Controller
     }
 }
 
+// Get check-in time for an employee
+public function getCheckIn($employee_id)
+{
+    try {
+        $employee = Employees::find($employee_id);
+        if (!$employee) {
+            return response()->json(['message' => 'Employee not found'], 404);
+        }
+
+        $checkin = Attendance::where('employee_id', $employee_id)
+            ->whereNotNull('checkin')
+            ->orderBy('checkin', 'desc')
+            ->first();
+
+        if (!$checkin) {
+            return response()->json(['message' => 'No check-in record found for the employee'], 404);
+        }
+
+        // Split date and time
+        $checkin_time = explode(' ', $checkin->checkin);
+        $date = $checkin_time[0];
+        $time = $checkin_time[1];
+
+        return response()->json(['date' => $date, 'time' => $time], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to get check-in time: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+// Get check-out time for an employee
+public function getCheckOut($employee_id)
+{
+    try {
+        $employee = Employees::find($employee_id);
+        if (!$employee) {
+            return response()->json(['message' => 'Employee not found'], 404);
+        }
+
+        $checkout = Attendance::where('employee_id', $employee_id)
+            ->whereNotNull('checkout')
+            ->orderBy('checkout', 'desc')
+            ->first();
+
+        if (!$checkout) {
+            return response()->json(['message' => 'No check-out record found for the employee'], 404);
+        }
+
+        // Split date and time
+        $checkout_time = explode(' ', $checkout->checkout);
+        $date = $checkout_time[0];
+        $time = $checkout_time[1];
+
+        return response()->json(['date' => $date, 'time' => $time], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to get check-out time: ' . $e->getMessage()
+        ], 500);
+    }
+}
 
 
 }
