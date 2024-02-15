@@ -158,7 +158,7 @@ class TasksController extends Controller
 }
 
     //Show Tasks
-    
+
     //Delete Tasks
      public function destroy($id)
     {

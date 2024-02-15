@@ -57,11 +57,11 @@ class SubTaskController extends Controller
                 'not_assigned',
                 function ($attribute, $value, $fail) use ($request) {
                     $task = Task::find($request->input('task_id'));
-                    
+
                     $employeeTask = EmployeeTasks::where('employee_id', $value)
                                                 ->where('tasks_id', $task->id)
                                                 ->exists();
-                    
+
                     if (!$employeeTask) {
                         $fail("Employee with ID $value is not associated with the specified Tasks.");
                     }
@@ -146,10 +146,9 @@ class SubTaskController extends Controller
     }
 }
 
-    // submitSUbtask
     public function submitSubtask(Request $request, $id){
 
-        $rules = [
+    $rules = [
         'subtask_status' => 'required|in:Completed',
         'confirmation_image' => 'required|string', // Ubah validasi gambar menjadi string
     ];
@@ -188,19 +187,21 @@ class SubTaskController extends Controller
             $subtaskSubmitStatus = 'overdue'; // Jika melewati 3 hari setelah end_date
         }
 
+        // Decode data URI base64 ke dalam binary data gambar
+        $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->confirmation_image));
+
+        // Simpan data gambar ke dalam file
+        $imageName = uniqid() . '.png'; // Generate nama unik untuk gambar
+        $imagePath = 'photos\\' . $imageName; // Path baru untuk menyimpan di public/photos
+        $path = public_path($imagePath); // Path lengkap ke direktori public
+        file_put_contents($path, $imageData);
+
+        // Simpan path gambar konfirmasi dalam basis data
         $subtask->update([
             'subtask_status' => $request->subtask_status,
             'subtask_submit_status' => $subtaskSubmitStatus,
+            'subtask_image' => $imagePath, // Simpan path gambar, bukan data biner
         ]);
-
-        // Simpan gambar konfirmasi dalam basis64 ke dalam file
-        $imageData = base64_decode($request->confirmation_image);
-        $imageName = uniqid() . '.png'; // Generate nama unik untuk gambar
-        $imagePath = 'confirmation_images/' . $imageName;
-        file_put_contents($imagePath, $imageData);
-
-        // Simpan path gambar konfirmasi dalam basis data
-        $subtask->update(['subtask_image' => $imagePath]);
 
         DB::commit();
 
@@ -218,6 +219,8 @@ class SubTaskController extends Controller
         ], 500);
     }
 }
+
+
     // show all subtasks by task
     public function showSubTasksByTask($task_id){
         try{
