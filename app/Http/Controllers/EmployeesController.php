@@ -255,7 +255,8 @@ class EmployeesController extends Controller
             'status' => 'login success',
             'token' => $token,
             'id_employee'=> $employee->id,// Include user details if needed
-            'username_employee'=> $employee->username,// Include user details if needed
+            'username_employee'=> $employee->username,
+            'roleId_employee'=> $employee->role_id,// Include user details if needed
         ]);
     } else {
         return response()->json([
