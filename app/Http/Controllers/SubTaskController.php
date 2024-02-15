@@ -8,25 +8,26 @@ use App\Models\SubTasks;
 use App\Models\Project;
 use App\Models\Employees;
 use App\Models\EmployeeTasks;
+use App\Models\EmployeeSubtasks;
 use App\Models\EmployeeProject;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
 class SubTaskController extends Controller
 {
-    public function index(Request $request){
-    $subtasks = SubTasks::all();
-    if(!$subtasks){
-        return response()->json([
-            'status' => 'error',
-            'message' => 'subtask not found'
-        ], 404);
-    }
-    return response()->json([
-        'status' => 'success',
-        'data' => $subtasks
-    ]);
-    }
+    // public function index(Request $request){
+    // $subtasks = SubTasks::all();
+    // if(!$subtasks){
+    //     return response()->json([
+    //         'status' => 'error',
+    //         'message' => 'subtask not found'
+    //     ], 404);
+    // }
+    // return response()->json([
+    //     'status' => 'success',
+    //     'data' => $subtasks
+    // ]);
+    // }
     public function showSubTask($id){
         $subtask= SubTasks::find($id);
         if(!$subtask){
@@ -51,19 +52,20 @@ class SubTaskController extends Controller
             'end_date' => 'required|date',
             'assign_by' => 'required|exists:mg_employee,id',
             'assign_to' => 'required|array', // assign_to harus berupa array
-            'assign_to.*' => [ // setiap item di assign_to harus ada dalam mg_employee_project dan terkait dengan proyek yang sesuai
-                'exists:mg_employee_project,employee_id',
+            'assign_to.*' => [ // each item in assign_to must exist in mg_employee_project and be associated with the appropriate project
+                'exists:mg_employee_tasks,employee_id',
                 function ($attribute, $value, $fail) use ($request) {
-                    // Validasi tambahan: pastikan karyawan terkait dengan proyek yang sesuai
-                    $projectId = $request->input('tasks_id');
-                    $employeeProject = EmployeeTasks::where('employee_id', $value)
-                                                   ->where('tasks_id', $projectId)
-                                                   ->exists();
-                    if (!$employeeProject) {
-                    $fail("Employee with ID $value is not associated with the specified Tasks.");
+                    $task = Task::find($request->input('task_id'));
+                    
+                    $employeeTask = EmployeeTasks::where('employee_id', $value)
+                                                ->where('tasks_id', $task->id)
+                                                ->exists();
+                    
+                    if (!$employeeTask) {
+                        $fail("Employee with ID $value is not associated with the specified Tasks.");
+                    }
                 }
-            },
-        ],
+            ],
             'subtask_status' => 'in:onPending,onReview,workingOnIt,Completed',
             'subtask_submit_status' => 'in:earlyFinish,finish,finish in delay,overdue',
             'subtask_percentage' => 'required|string',
@@ -86,34 +88,39 @@ class SubTaskController extends Controller
         // Memulai transaksi database
         DB::beginTransaction();
          // Mendapatkan proyek dan karyawan yang terlibat
-        $task = Task::find($request->input('tasks_id'));
+        $task = Task::find($request->input('task_id'));
+
         $assignBy = Employees::find($request->input('assign_by')); // Ubah ke Employee
+
         // Membuat subtask
-        $subtask = Subtask::create($request->all());
+        $subtask = SubTasks::create($request->all());
         // Pastikan proyek dan karyawan yang terlibat ditemukan
         if (!$task || !$assignBy) {
-            throw new \Exception('Project or assignBy not found.');
+            throw new \Exception('task or assignBy not found.');
         }
+
         // Membuat tugas
-        $task = Task::create($request->all());
+        // $task = Task::create($request->all());
+
         // Mengassign tugas kepada karyawan
         $assignedToIds = $request->input('assign_to');
         foreach ($assignedToIds as $assignedToId) {
-            EmployeeTasks::create([
-                'tasks_id' => $task->id,
+            EmployeeSubtasks::create([
                 'employee_id' => $assignedToId,
+                'tasks_id' => $task->id,
+                'subtasks_id' => $subtask->id,
             ]);
         }
         // Menambahkan jumlah tugas yang dibuat ke dalam proyek
-        $project->total_task_created += 1;
-        $project->save();
+        $task->total_subtask_created += 1;
+        $task->save();
 
         // Commit transaksi database
         DB::commit();
 
         // Respon berhasil
         return response()->json([
-            'status' => 'success',
+            'status' => 'success creating subtask',
             'data' => $subtask
         ], 200);
     } catch (\Exception $e) {
@@ -200,6 +207,58 @@ class SubTaskController extends Controller
         ], 500);
     }
 }
+    // show all subtasks by task
+    public function showSubTasksByTask($task_id){
+        try{
+            $subtasks = SubTasks::where('task_id', $task_id)
+                                ->get();
+
+            if(!$subtasks){
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'subtask not found'
+                ], 404);
+            }
+            return response()->json([
+                'status' => 'success',
+                'data' => $subtasks
+            ],200);
+
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to show all subtask: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    //show all subtasks by employeeid
+
+    public function showSubTasksByEmployee(){
+        try{
+            //get token from header
+            //get employee_id from token
+            // $subtasks = SubTasks::where('employee_id', $employee_id)
+            //                     ->get();
+
+            // if(!$subtasks){
+            //     return response()->json([
+            //         'status' => 'error',
+            //         'message' => 'subtask not found'
+            //     ], 404);
+            // }
+            return response()->json([
+                'status' => 'not yet implemented',
+            ],200);
+
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to show all subtask: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 
 
 }

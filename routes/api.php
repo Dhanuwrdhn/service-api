@@ -67,10 +67,13 @@ Route::get('checkout/{employee_id}',[\App\Http\Controllers\AttendanceController:
 Route::post('create-tasks', [\App\Http\Controllers\TasksController::class, 'createTask']);
 Route::get('show-tasks', [\App\Http\Controllers\TasksController::class, 'index']);
 Route::put('update-status/{id}', [\App\Http\Controllers\TasksController::class, 'updateStatus']);
+
 // API SUBTASKS
-Route::post('create-subtasks', [\App\Http\Controllers\SubTaskController::class, 'createSubTask']);
-Route::get('show-subtasks', [\App\Http\Controllers\SubTaskController::class, 'index']);
-Route::get('show-subtasks/{id}', [\App\Http\Controllers\SubTaskController::class, 'showSubTask']);
+Route::post('create-subtasks', [\App\Http\Controllers\SubTaskController::class, 'createSubTasks']);
+// Route::get('show-subtasks', [\App\Http\Controllers\SubTaskController::class, 'index']);
+Route::get('show-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'showSubTask']);
+Route::get('show-subtasks/{task_id}', [\App\Http\Controllers\SubTaskController::class, 'showSubTasksByTask']);
+Route::get('show-subtasks',[\App\Http\Controllers\SubTaskController::class, 'showSubTasksByEmployee']);
 
 // API TOTAL EMPLOYEE PROJECT
 Route::get('total-employeeprojects', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjects']);
