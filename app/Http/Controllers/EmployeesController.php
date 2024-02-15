@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class EmployeesController extends Controller
 {
@@ -49,8 +50,7 @@ class EmployeesController extends Controller
             'data' => $employee
         ]);
     }
-    // Create Employee
-   public function create(Request $request)
+  public function create(Request $request)
 {
     $rules = [
         'role_id' => 'required|integer',
@@ -79,23 +79,41 @@ class EmployeesController extends Controller
 
     // Generate email from employee_name
     $nameParts = explode(' ', $data['employee_name']);
-    if (count($nameParts) >= 3) {
-        $middleLastName = array_slice($nameParts, 1); // Ambil bagian nama dari indeks 1 ke depan
-        $emailUsername = implode('.', array_map('strtolower', $middleLastName));
+    $firstName = $nameParts[0]; // Ambil bagian pertama sebagai first name
+    $middleName = '';
+    $lastName = '';
+    if (count($nameParts) > 1) {
+        $lastName = end($nameParts); // Ambil bagian terakhir sebagai last name
+        if (count($nameParts) > 2) {
+            // Jika ada lebih dari dua bagian dalam nama, gunakan bagian tengah sebagai middle name
+            $middleName = $nameParts[1];
+        }
     } else {
-        // Jika tidak ada middle name, gunakan last name saja
-        $emailUsername = strtolower(end($nameParts));
+        // Jika nama hanya terdiri dari satu kata
+        $lastName = $nameParts[0];
     }
-    $email = $emailUsername . '@innovation.co.id';
+
+    $email = ($middleName != '') ? $middleName . '.' : $firstName . '.';
+    $email .= $lastName . '@innovation.co.id';
+
+    // Check if username already exists, if yes, add a number after the username
+    $username = ($middleName != '') ? strtolower($middleName) : strtolower($firstName); // Gunakan middle name jika ada, jika tidak, gunakan first name
+    $count = 1;
+    $originalUsername = $username;
+    while (Employees::where('username', $username)->exists()) {
+        $username = $originalUsername . $count;
+        $count++;
+    }
+    $data['username'] = $username;
     $data['email'] = $email;
 
     // Generate password from last name and date_of_birth
-    $lastName = end($nameParts);
     $dob = str_replace('-', '', $data['date_of_birth']);
-    $password = $lastName . $dob;
+    $dobFormatted = date_create_from_format('Y-m-d', $data['date_of_birth'])->format('dmY'); // Ubah format tanggal lahir menjadi DDMMYYYY
+    $password = strtolower($lastName) . $dobFormatted;
 
     // Print password before hashing
-    echo "Password before hashing: $password";
+    // echo "Password before hashing: $password";
 
     // Hash the password and create employee
     $data['password'] = Hash::make($password);
@@ -106,6 +124,9 @@ class EmployeesController extends Controller
         'data' => $employee
     ], 200);
 }
+
+
+
 
     // update employee
     public function update(Request $request, $id){
@@ -181,6 +202,7 @@ class EmployeesController extends Controller
             'data' => $employee
         ]);
     }
+
     //delete
     public function destroy($id)
     {
@@ -200,6 +222,11 @@ class EmployeesController extends Controller
             'message' => 'employee deleted'
         ]);
     }
+
+
+
+
+
     // login
     public function login(Request $request)
     {
@@ -237,6 +264,10 @@ class EmployeesController extends Controller
         ], 401);
     }
 }
+
+
+
+
    public function refreshToken(Request $request)
 {
     $employee = $request->user();
@@ -261,6 +292,37 @@ class EmployeesController extends Controller
         'token' => $token,
         'message' => 'Token refreshed successfully.',
     ]);
+}
+
+public function logOut($id)
+{
+    // Temukan pengguna berdasarkan ID
+    $user = Employees::find($id);
+
+    if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'employee not found'
+            ]);
+        }
+    if ($user) {
+        // Revoke semua token yang terkait dengan pengguna
+        $user->tokens()->delete();
+
+        // Atau, jika Anda ingin hanya menonaktifkan token akses di database (tanpa menghapusnya dari penyedia token)
+        // $user->tokens->each->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Logout berhasil'
+        ]);
+    } else {
+        // Jika pengguna tidak ditemukan
+        return response()->json([
+            'status' => 'error',
+            'message' => 'User tidak ditemukan'
+        ], 404);
+    }
 }
 
 

@@ -82,6 +82,9 @@ Route::get('total-employeeprojects/{id}', [\App\Http\Controllers\EmployeeProject
 Route::get('total-employeetasks', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasks']);
 Route::get('total-employeetasks/{id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasksbyId']);
 
+
+// API LOGOUT
+Route::delete('logOut/{id}', [\App\Http\Controllers\EmployeesController::class, 'logOut']);
 // API LOGIN
 Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']);
 // // refresh-token
