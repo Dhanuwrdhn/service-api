@@ -19,6 +19,7 @@ class SubTasks extends Model
         'subtask_submit_status',
         'subtask_percentage',
         'subtask_image',
+        'reason',
     ];
     protected $casts = [
         'start_date' => 'datetime:Y-m-d H:m:s',
