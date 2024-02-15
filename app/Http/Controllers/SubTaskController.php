@@ -128,7 +128,7 @@ class SubTaskController extends Controller
     }
 }
 
-// submitSUbtask
+    // submitSUbtask
     public function submitSubtask(Request $request, $id){
 
         $rules = [
