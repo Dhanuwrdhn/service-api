@@ -135,7 +135,8 @@ class SubTaskController extends Controller
     }
 }
 
- public function submitSubtask(Request $request, $id){
+    // submitSUbtask
+public function submitSubtask(Request $request, $id){
 
     $rules = [
         'subtask_status' => 'required|in:Completed',
@@ -176,21 +177,16 @@ class SubTaskController extends Controller
             $subtaskSubmitStatus = 'overdue'; // Jika melewati 3 hari setelah end_date
         }
 
-        // Decode data URI base64 ke dalam binary data gambar
-        $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->confirmation_image));
-
-        // Simpan data gambar ke dalam file
-        $imageName = uniqid() . '.png'; // Generate nama unik untuk gambar
-        $imagePath = 'photos\\' . $imageName; // Path baru untuk menyimpan di public/photos
-        $path = public_path($imagePath); // Path lengkap ke direktori public
-        file_put_contents($path, $imageData);
-
-        // Simpan path gambar konfirmasi dalam basis data
         $subtask->update([
             'subtask_status' => $request->subtask_status,
             'subtask_submit_status' => $subtaskSubmitStatus,
-            'subtask_image' => $imagePath, // Simpan path gambar, bukan data biner
         ]);
+
+        // Decode data URI base64 ke dalam binary data gambar
+        $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->confirmation_image));
+
+        // Simpan data gambar ke dalam kolom subtask_image dalam tabel mg_sub_tasks
+        $subtask->update(['subtask_image' => $imageData]);
 
         DB::commit();
 
@@ -208,8 +204,6 @@ class SubTaskController extends Controller
         ], 500);
     }
 }
-
-
 
     // show all subtasks by task
     public function showSubTasksByTask($task_id){
