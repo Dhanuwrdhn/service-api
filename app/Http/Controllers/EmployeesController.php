@@ -50,66 +50,63 @@ class EmployeesController extends Controller
         ]);
     }
     // Create Employee
-    public function create(Request $request)
-    {
-        $rules=[
-          'role_id' => 'required|integer',
-          'jobs_id' => 'required|integer',
-          'team_id' => 'required|integer',
-          'employee_name' => 'required|string',
-          'date_of_birth' => 'date',
-          'age' => 'string',
-          'mobile_number' => 'string',
-          'email' => 'required|email|unique:mg_employee,email',
-          'username' => 'required|string|unique:mg_employee,username',
-          'password' => 'required|string|min:8',
-          'gender' => 'in:Male,Female',
-          'religion' => 'string',
-          'npwp_number' => 'string',
-          'identity_number' => 'string',
-        ];
+   public function create(Request $request)
+{
+    $rules = [
+        'role_id' => 'required|integer',
+        'jobs_id' => 'required|integer',
+        'team_id' => 'required|integer',
+        'employee_name' => 'required|string',
+        'date_of_birth' => 'date',
+        'age' => 'string',
+        'mobile_number' => 'string',
+        'gender' => 'in:Male,Female',
+        'religion' => 'string',
+        'npwp_number' => 'string',
+        'identity_number' => 'string',
+    ];
 
-        $data = $request->all();
+    $data = $request->all();
 
-        $validator = Validator::make($data, $rules);
+    $validator = Validator::make($data, $rules);
 
-        if ($validator->fails()){
-            return response()->json([
-                'status' => 'error',
-                'message' => $validator->errors()
-            ], 400);
-        }
-        $roleId = $request->input('role_id');
-        $roleId= Role::find($roleId);
-        if(!$roleId){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'role not found'
-            ], 404);
-        }
-        $jobId = $request->input('jobs_id');
-        $jobId= Job::find($jobId);
-        if(!$jobId){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'job not found'
-            ], 404);
-        }
-        $teamId = $request->input('team_id');
-        $teamId= Team::find($teamId);
-        if(!$teamId){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'team not found'
-            ], 404);
-        }
-        $data['password'] = Hash::make($data['password']);
-        $employee = Employees::create($data);
+    if ($validator->fails()) {
         return response()->json([
-            'status' => 'success',
-            'data' => $employee
-        ], 200);
+            'status' => 'error',
+            'message' => $validator->errors()
+        ], 400);
     }
+
+    // Generate email from employee_name
+    $nameParts = explode(' ', $data['employee_name']);
+    if (count($nameParts) >= 3) {
+        $middleLastName = array_slice($nameParts, 1); // Ambil bagian nama dari indeks 1 ke depan
+        $emailUsername = implode('.', array_map('strtolower', $middleLastName));
+    } else {
+        // Jika tidak ada middle name, gunakan last name saja
+        $emailUsername = strtolower(end($nameParts));
+    }
+    $email = $emailUsername . '@innovation.co.id';
+    $data['email'] = $email;
+
+    // Generate password from last name and date_of_birth
+    $lastName = end($nameParts);
+    $dob = str_replace('-', '', $data['date_of_birth']);
+    $password = $lastName . $dob;
+
+    // Print password before hashing
+    echo "Password before hashing: $password";
+
+    // Hash the password and create employee
+    $data['password'] = Hash::make($password);
+    $employee = Employees::create($data);
+
+    return response()->json([
+        'status' => 'success',
+        'data' => $employee
+    ], 200);
+}
+
     // update employee
     public function update(Request $request, $id){
         $rules=[
