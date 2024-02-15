@@ -81,11 +81,18 @@ class EmployeesController extends Controller
     $nameParts = explode(' ', $data['employee_name']);
     $firstName = $nameParts[0]; // Ambil bagian pertama sebagai first name
     $middleName = '';
-    if (count($nameParts) > 2) {
-        // Jika ada lebih dari dua bagian dalam nama, gunakan bagian tengah sebagai middle name
-        $middleName = $nameParts[1];
+    $lastName = '';
+    if (count($nameParts) > 1) {
+        $lastName = end($nameParts); // Ambil bagian terakhir sebagai last name
+        if (count($nameParts) > 2) {
+            // Jika ada lebih dari dua bagian dalam nama, gunakan bagian tengah sebagai middle name
+            $middleName = $nameParts[1];
+        }
+    } else {
+        // Jika nama hanya terdiri dari satu kata
+        $lastName = $nameParts[0];
     }
-    $lastName = end($nameParts); // Ambil bagian terakhir sebagai last name
+
     $email = ($middleName != '') ? $middleName . '.' : $firstName . '.';
     $email .= $lastName . '@innovation.co.id';
 
@@ -117,7 +124,8 @@ class EmployeesController extends Controller
         'data' => $employee
     ], 200);
 }
-    
+
+
 
 
     // update employee
