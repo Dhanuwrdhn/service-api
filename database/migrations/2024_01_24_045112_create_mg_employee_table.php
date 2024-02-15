@@ -21,7 +21,7 @@ return new class extends Migration
             $table->String('age')->nullable();
             $table->string('mobile_number')->nullable();
             $table->string('email'); // Remove 'unique' constraint
-            $table->string('username')->unique();
+            $table->string('username');
             $table->string('password'); // No need for 'unique' constraint
             $table->enum ('gender', ['Male', 'Female'])->nullable();
             $table->string('religion')->nullable();

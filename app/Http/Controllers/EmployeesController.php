@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class EmployeesController extends Controller
 {
@@ -49,8 +50,8 @@ class EmployeesController extends Controller
             'data' => $employee
         ]);
     }
-    // Create Employee
-   public function create(Request $request)
+    // create
+    public function create(Request $request)
 {
     $rules = [
         'role_id' => 'required|integer',
@@ -79,20 +80,23 @@ class EmployeesController extends Controller
 
     // Generate email from employee_name
     $nameParts = explode(' ', $data['employee_name']);
-    if (count($nameParts) >= 3) {
-        $middleLastName = array_slice($nameParts, 1); // Ambil bagian nama dari indeks 1 ke depan
-        $emailUsername = implode('.', array_map('strtolower', $middleLastName));
-    } else {
-        // Jika tidak ada middle name, gunakan last name saja
-        $emailUsername = strtolower(end($nameParts));
+    $firstName = array_shift($nameParts); // Ambil bagian pertama sebagai first name
+    $middleName = '';
+    if (count($nameParts) > 0) {
+        // Jika ada lebih dari satu bagian dalam nama, ambil bagian kedua sebagai middle name
+        $middleName = array_shift($nameParts);
     }
+    $lastName = array_pop($nameParts); // Ambil bagian terakhir sebagai last name
+    $emailUsername = strtolower($middleName) . '.' . strtolower($lastName); // Gabungkan middle name dan last name
     $email = $emailUsername . '@innovation.co.id';
     $data['email'] = $email;
 
+    // Set username to middle name
+    $data['username'] = strtolower($middleName);
+
     // Generate password from last name and date_of_birth
-    $lastName = end($nameParts);
     $dob = str_replace('-', '', $data['date_of_birth']);
-    $password = $lastName . $dob;
+    $password = strtolower($lastName) . $dob;
 
     // Print password before hashing
     echo "Password before hashing: $password";
@@ -106,6 +110,7 @@ class EmployeesController extends Controller
         'data' => $employee
     ], 200);
 }
+
 
     // update employee
     public function update(Request $request, $id){
