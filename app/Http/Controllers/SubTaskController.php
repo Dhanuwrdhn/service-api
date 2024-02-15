@@ -54,6 +54,7 @@ class SubTaskController extends Controller
             'assign_to' => 'required|array', // assign_to harus berupa array
             'assign_to.*' => [ // each item in assign_to must exist in mg_employee_project and be associated with the appropriate project
                 'exists:mg_employee_tasks,employee_id',
+                'not_assigned',
                 function ($attribute, $value, $fail) use ($request) {
                     $task = Task::find($request->input('task_id'));
 
@@ -74,6 +75,16 @@ class SubTaskController extends Controller
         ];
 
         // Validasi input
+        Validator::extend('not_assigned', function ($attribute, $value, $parameters, $validator) use ($request) {
+            $task_id = $request->input('task_id');
+            $exists = EmployeeSubtasks::where('employee_id', $value)
+                                      ->where('tasks_id', $task_id)
+                                      ->exists();
+            if ($exists) {
+                return false;
+            }
+            return true;
+        }, 'The employee is already assigned to the subtask.');
         $validator = Validator::make($request->all(), $rules);
 
         // Jika validasi gagal, kembalikan respon dengan pesan error
