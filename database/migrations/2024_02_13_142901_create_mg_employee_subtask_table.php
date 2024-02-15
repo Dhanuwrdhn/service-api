@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('employee_id');
             $table->unsignedBigInteger('tasks_id');
             $table->unsignedBigInteger('subtasks_id');
+            $table->string('isAccepted')->nullable();
 
             // Menambah foreign key ke mg_tasks
             $table->foreign('tasks_id')->references('id')->on('mg_tasks')->onDelete('cascade');
