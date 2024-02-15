@@ -35,11 +35,24 @@ class AttendanceController extends Controller
 
         // Buat entri baru di tabel attendance dengan timestamp checkin
         $checkinTime = (new \DateTime())->format('Y-m-d H:i:s'); // Tambahkan tanggal saat membuat objek DateTime
+
+        //check time if below 08:30 is early, if between 08:30 - 09:00 is on time, if above 09:00 is late then assign to status
+        $checkinTime = new \DateTime($checkinTime);
+        $status = 'On Time';
+        if ($checkinTime->format('H:i') < '08:30') {
+            $status = 'Early';
+        } elseif ($checkinTime->format('H:i') > '09:00') {
+            $status = 'Late';
+        }
+
+        //reason for late, if status is late, if not, then null
+        $reason = $request->input('reason', null);
         Attendance::create([
             'employee_id' => $employee_id,
             'checkin' => $checkinTime,
             'checkout' => null,
-            'isattended' => true,
+            'status' => $status,
+            'reason' => $reason
         ]);
 
         return response()->json(['message' => 'Check-in successful', 'employee_id' => $employee_id, 'checkin_time' => $checkinTime], 201);
