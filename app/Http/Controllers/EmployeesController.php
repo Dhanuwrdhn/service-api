@@ -113,7 +113,7 @@ class EmployeesController extends Controller
     $password = strtolower($lastName) . $dobFormatted;
 
     // Print password before hashing
-    echo "Password before hashing: $password";
+    // echo "Password before hashing: $password";
 
     // Hash the password and create employee
     $data['password'] = Hash::make($password);
