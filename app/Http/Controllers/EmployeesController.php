@@ -202,6 +202,7 @@ class EmployeesController extends Controller
             'data' => $employee
         ]);
     }
+
     //delete
     public function destroy($id)
     {
@@ -221,6 +222,11 @@ class EmployeesController extends Controller
             'message' => 'employee deleted'
         ]);
     }
+
+
+
+
+
     // login
     public function login(Request $request)
     {
@@ -258,6 +264,10 @@ class EmployeesController extends Controller
         ], 401);
     }
 }
+
+
+
+
    public function refreshToken(Request $request)
 {
     $employee = $request->user();
@@ -282,6 +292,37 @@ class EmployeesController extends Controller
         'token' => $token,
         'message' => 'Token refreshed successfully.',
     ]);
+}
+
+public function logOut($id)
+{
+    // Temukan pengguna berdasarkan ID
+    $user = Employees::find($id);
+
+    if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'employee not found'
+            ]);
+        }
+    if ($user) {
+        // Revoke semua token yang terkait dengan pengguna
+        $user->tokens()->delete();
+
+        // Atau, jika Anda ingin hanya menonaktifkan token akses di database (tanpa menghapusnya dari penyedia token)
+        // $user->tokens->each->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Logout berhasil'
+        ]);
+    } else {
+        // Jika pengguna tidak ditemukan
+        return response()->json([
+            'status' => 'error',
+            'message' => 'User tidak ditemukan'
+        ], 404);
+    }
 }
 
 
