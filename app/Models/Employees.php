@@ -4,21 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\belongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-use App\Models\Job;
-use App\Models\Role;
-use App\Models\Team;
-use App\Models\Employee;
-
-
 class Employees extends Model
 {
-    use HasFactory, HasApiTokens, Notifiable;
+   use HasFactory, HasApiTokens, Notifiable;
+
     protected $table = 'mg_employee';
 
     protected $fillable = [
@@ -38,7 +33,7 @@ class Employees extends Model
         'identity_number',
     ];
 
-    protected $hidden =[
+    protected $hidden = [
         'password'
     ];
 
@@ -47,24 +42,23 @@ class Employees extends Model
         'updated_at' => 'datetime:Y-m-d H:m:s'
     ];
 
-    public function jobs()
+    public function job(): BelongsTo
     {
-        return $this->belongsTo('App\Models\Job')->orderBy('id','ASC');
+        return $this->belongsTo(Job::class, 'jobs_id');
     }
-    public function teams()
+
+    public function team(): HasMany
     {
-        return $this->hasMany('App\Models\Team')->orderBy('id','ASC');
+        return $this->hasMany(Team::class, 'team_id');
     }
-    public function roles()
+
+    public function role(): HasMany
     {
-        return $this->hasMany('App\Models\Role')->orderBy('id','ASC');
+        return $this->hasMany(Role::class, 'role_id');
     }
+
     public function projects()
     {
         return $this->belongsToMany(Project::class, 'mg_employee_project', 'employee_id', 'project_id');
-    }
-    public function client()
-    {
-        return $this->hasMany('App\Models\Client')->orderBy('id','ASC');
     }
 }

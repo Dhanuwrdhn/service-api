@@ -110,7 +110,7 @@ class EmployeesController extends Controller
             'data' => $employee
         ], 200);
     }
-
+    // update employee
     public function update(Request $request, $id){
         $rules=[
           'role_id' => 'required|integer',

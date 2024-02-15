@@ -20,9 +20,9 @@ return new class extends Migration
             $table->date('date_of_birth')->nullable();
             $table->String('age')->nullable();
             $table->string('mobile_number')->nullable();
-            $table->string('email');
+            $table->string('email'); // Remove 'unique' constraint
             $table->string('username')->unique();
-            $table->string('password');
+            $table->string('password'); // No need for 'unique' constraint
             $table->enum ('gender', ['Male', 'Female'])->nullable();
             $table->string('religion')->nullable();
             $table->string('npwp_number')->nullable();

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ProjectsController extends Controller
 {
+    // get all
     public function index()
     {
         $projects = Project::all();
@@ -24,7 +25,7 @@ class ProjectsController extends Controller
             'data' => $projects
         ]);
     }
-
+    // get all
     public function show($id)
     {
         $projects = Project::find($id);
@@ -40,8 +41,9 @@ class ProjectsController extends Controller
             'data' => $projects
         ]);
     }
-    public function create(Request $request)
-{
+    // Create api Project
+    public function create(Request $request){
+
     $rules = [
         'project_name' => 'required|string',
         'team_id' => 'required|exists:mg_teams,id',
@@ -174,8 +176,7 @@ class ProjectsController extends Controller
         ], 500);
     }
 }
-
-
+    // Delete API
     public function destroy($id)
     {
         $projects = Project::find($id);
@@ -187,7 +188,7 @@ class ProjectsController extends Controller
         }
         $projects->delete();
     }
-
+    //
     public function updateProjectStatus(Request $request, $id)
 {
     $rules = [
