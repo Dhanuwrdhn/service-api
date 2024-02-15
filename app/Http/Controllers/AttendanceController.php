@@ -99,9 +99,9 @@ class AttendanceController extends Controller
     }
 }
 
-// Get check-in time for an employee
-public function getCheckIn($employee_id)
-{
+    // Get check-in time for an employee
+    public function getCheckIn($employee_id){
+
     try {
         $employee = Employees::find($employee_id);
         if (!$employee) {
@@ -122,7 +122,12 @@ public function getCheckIn($employee_id)
         $date = $checkin_time[0];
         $time = $checkin_time[1];
 
-        return response()->json(['date' => $date, 'time' => $time], 200);
+        return response()->json([
+            'id' => $checkin->id,
+            'employee_id' => $checkin->employee_id,
+            'date' => $date,
+            'time' => $time
+        ], 200);
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
@@ -154,7 +159,12 @@ public function getCheckOut($employee_id)
         $date = $checkout_time[0];
         $time = $checkout_time[1];
 
-        return response()->json(['date' => $date, 'time' => $time], 200);
+        return response()->json([
+            'id' => $checkout->id,
+            'employee_id' => $checkout->employee_id,
+            'date' => $date,
+            'time' => $time
+        ], 200);
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
