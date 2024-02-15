@@ -49,6 +49,7 @@ Route::delete('projects/{id}', [\App\Http\Controllers\ProjectsController::class,
 Route::put('projects-status/{id}', [\App\Http\Controllers\ProjectsController::class, 'updateProjectStatus']);
 Route::get('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'show']);
 //API EMPLOYEE
+
 Route::post('employees', [\App\Http\Controllers\EmployeesController::class, 'create']);
 Route::put('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'update']);
 Route::get('employees', [\App\Http\Controllers\EmployeesController::class, 'index']);
@@ -70,11 +71,14 @@ Route::put('update-status/{id}', [\App\Http\Controllers\TasksController::class, 
 
 // API SUBTASKS
 Route::post('create-subtasks', [\App\Http\Controllers\SubTaskController::class, 'createSubTasks']);
-// Route::get('show-subtasks', [\App\Http\Controllers\SubTaskController::class, 'index']);
+Route::put('edit-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'editSubTask']);
 Route::get('show-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'showSubTask']);
 Route::get('show-subtasks/{task_id}', [\App\Http\Controllers\SubTaskController::class, 'showSubTasksByTask']);
 Route::get('show-subtasks',[\App\Http\Controllers\SubTaskController::class, 'showSubTasksByEmployee']);
-Route::post('submitSubtask/{id}',[\App\Http\Controllers\SubTaskController::class, 'submitSubtask']);
+Route::put('accept-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'acceptSubTask']);
+Route::put('reject-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'rejectSubTask']);
+Route::put('review-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'reviewSubTask']);
+Route::post('submit-subtask/{id}',[\App\Http\Controllers\SubTaskController::class, 'submitSubtask']);
 
 // API TOTAL EMPLOYEE PROJECT
 Route::get('total-employeeprojects', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjects']);
