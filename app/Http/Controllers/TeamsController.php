@@ -31,14 +31,14 @@ class TeamsController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $roles
+            'data' => $teams
         ]);
     }
     // create
     public function create(Request $request){
         $rules=[
             'team_name' => 'required|String',
-            'description' => 'String',
+            'description' => 'nullable|String',
         ];
         $data = $request->all();
         $validator = Validator::make($data, $rules);

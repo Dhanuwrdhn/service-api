@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Models\SubTasks;
+use App\Models\Project;
+use App\Models\Employees;
+use App\Models\EmployeeTasks;
+use App\Models\EmployeeProject;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
@@ -37,60 +41,93 @@ class SubTaskController extends Controller
         ]);
     }
 
-    public function createSubTask(Request $request){
+    public function createSubTasks(Request $request){
 
+        // Aturan validasi untuk input
         $rules = [
-        'task_id' => 'required',
-        'subtask_name' => 'required',
-        'subtask_description' => 'string|nullable',
-        'start_date' => 'required|date',
-        'end_date' => 'required|date',
-        'assign_by'=>'required|date',
-        'subtask_status' => 'in:onPending,onReview,workingOnIt,Completed',
-        'subtask_submit_status' => 'in:earlyFinish,finish,finish in delay,overdue',
-        'subtask_percentage' => 'required|string',
-        'subtask_image' => 'string|nullable',
-    ];
+            'subtask_name' => 'required',
+            'task_id' => 'required',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
+            'assign_by' => 'required|exists:mg_employee,id',
+            'assign_to' => 'required|array', // assign_to harus berupa array
+            'assign_to.*' => [ // setiap item di assign_to harus ada dalam mg_employee_project dan terkait dengan proyek yang sesuai
+                'exists:mg_employee_project,employee_id',
+                function ($attribute, $value, $fail) use ($request) {
+                    // Validasi tambahan: pastikan karyawan terkait dengan proyek yang sesuai
+                    $projectId = $request->input('tasks_id');
+                    $employeeProject = EmployeeTasks::where('employee_id', $value)
+                                                   ->where('tasks_id', $projectId)
+                                                   ->exists();
+                    if (!$employeeProject) {
+                    $fail("Employee with ID $value is not associated with the specified Tasks.");
+                }
+            },
+        ],
+            'subtask_status' => 'in:onPending,onReview,workingOnIt,Completed',
+            'subtask_submit_status' => 'in:earlyFinish,finish,finish in delay,overdue',
+            'subtask_percentage' => 'required|string',
+            'subtask_image' => 'string|nullable',
+            'subtask_description' => 'string|nullable',
+        ];
 
+        // Validasi input
         $validator = Validator::make($request->all(), $rules);
 
+        // Jika validasi gagal, kembalikan respon dengan pesan error
         if ($validator->fails()) {
-            return response()->json([
+        return response()->json([
             'status' => 'error',
             'message' => $validator->errors()
-            ], 400);
-        }
+        ], 400);
+    }
 
-        try {
+    try {
+        // Memulai transaksi database
         DB::beginTransaction();
-
-        $tasksId = $request->input('task_id');
-        $tasks = Task::find($tasksId);
-
-        if (!$tasks) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Task not found'
-            ], 404);
+         // Mendapatkan proyek dan karyawan yang terlibat
+        $task = Task::find($request->input('tasks_id'));
+        $assignBy = Employees::find($request->input('assign_by')); // Ubah ke Employee
+        // Membuat subtask
+        $subtask = Subtask::create($request->all());
+        // Pastikan proyek dan karyawan yang terlibat ditemukan
+        if (!$task || !$assignBy) {
+            throw new \Exception('Project or assignBy not found.');
         }
+        // Membuat tugas
+        $task = Task::create($request->all());
+        // Mengassign tugas kepada karyawan
+        $assignedToIds = $request->input('assign_to');
+        foreach ($assignedToIds as $assignedToId) {
+            EmployeeTasks::create([
+                'tasks_id' => $task->id,
+                'employee_id' => $assignedToId,
+            ]);
+        }
+        // Menambahkan jumlah tugas yang dibuat ke dalam proyek
+        $project->total_task_created += 1;
+        $project->save();
 
-        $subtask = SubTasks::create($validator->validated());
-
+        // Commit transaksi database
         DB::commit();
 
+        // Respon berhasil
         return response()->json([
             'status' => 'success',
             'data' => $subtask
-        ]);
+        ], 200);
     } catch (\Exception $e) {
+        // Rollback transaksi database jika terjadi kesalahan
         DB::rollBack();
 
+        // Respon dengan pesan error
         return response()->json([
             'status' => 'error',
-            'message' => 'Failed to create subtask: ' . $e->getMessage()
+            'message' => 'Failed to create task. ' . $e->getMessage()
         ], 500);
     }
 }
+
 // submitSUbtask
     public function submitSubtask(Request $request, $id){
 

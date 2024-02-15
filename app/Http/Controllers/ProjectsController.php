@@ -178,7 +178,7 @@ class ProjectsController extends Controller
 
     public function destroy($id)
     {
-        $projects = Projects::find($id);
+        $projects = Project::find($id);
         if (!$projects) {
             return response()->json([
                 'status' => 'error',
