@@ -80,20 +80,21 @@ class EmployeesController extends Controller
     // Generate email from employee_name
     $nameParts = explode(' ', $data['employee_name']);
     $firstName = $nameParts[0]; // Ambil bagian pertama sebagai first name
-    $lastName = end($nameParts); // Ambil bagian terakhir sebagai last name
     $middleName = '';
     if (count($nameParts) > 2) {
         // Jika ada lebih dari dua bagian dalam nama, gunakan bagian tengah sebagai middle name
         $middleName = $nameParts[1];
     }
+    $lastName = end($nameParts); // Ambil bagian terakhir sebagai last name
     $email = ($middleName != '') ? $middleName . '.' : $firstName . '.';
     $email .= $lastName . '@innovation.co.id';
 
     // Check if username already exists, if yes, add a number after the username
-    $username = $firstName; // Gunakan first name sebagai username
+    $username = ($middleName != '') ? strtolower($middleName) : strtolower($firstName); // Gunakan middle name jika ada, jika tidak, gunakan first name
     $count = 1;
+    $originalUsername = $username;
     while (Employees::where('username', $username)->exists()) {
-        $username = $firstName . $count;
+        $username = $originalUsername . $count;
         $count++;
     }
     $data['username'] = $username;
@@ -116,7 +117,7 @@ class EmployeesController extends Controller
         'data' => $employee
     ], 200);
 }
-
+    
 
 
     // update employee
