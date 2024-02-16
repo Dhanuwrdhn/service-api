@@ -462,13 +462,29 @@ class SubTaskController extends Controller
                 ], 404);
             }
 
-            //check if already reviewed
-            if($subtask->subtask_status != 'onReview'){
+            //check condition to every status
+            if($subtask->subtask_status === 'Completed'){
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'unable to review because status is not onReview, please edit subtask instead',
+                    'message' => 'unable to review because status is already completed',
+                ], 400);
+            } else if ($subtask->subtask_status === 'onPending'){
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'unable to review because status is already reviewed and currently on pending',
+                ], 400);
+            } else if ($subtask->subtask_status === 'workingOnIt'){
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'unable to review because status is already in working, please edit sub task instead',
+                ], 400);
+            } else if ($subtask->subtask_status === 'onReview' && $subtask->subtask_image === null){
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'unable to review because status is onReview, please edit subtask instead',
                 ], 400);
             }
+
 
             $validatedData = $request->validate([
                 'subtask_name' => 'sometimes|string',
@@ -477,10 +493,27 @@ class SubTaskController extends Controller
                 'end_date' => 'sometimes|date',
                 'subtask_status' => 'sometimes|string',
             ]);
-            //change reason to null after review
-            $validatedData['reason'] = null;
-            //change status to onPending
-            $validatedData['subtask_status'] = 'onPending';
+            
+            // there is 2 condition when a subtask is on review, either the user rejected an pending task and admin has to review it, or the user submit the task and admin has to review it
+            // if the user rejected the task, the status will be onReview, and the reason why they rejectwill be filled 
+            // then admin will review the task, and change the status to onPending
+            // if the user submit the task, the status will be onReview with confirmation image, and the reason will be filled
+            // then admin will review the task, and change the status to completed
+            
+            if ($subtask->subtask_image != null){
+                $validatedData['subtask_status'] = 'Completed';
+                
+                //update Task informations
+                $updateTask = Task::find($subtask->task_id);
+                $updateTask->total_subtask_completed += 1;
+                $updateTask->percentage_task += $subtask->subtask_percentage;
+                $updateTask->save();
+
+            } else if ($subtask->subtask_image === null || $subtask->subtask_image === 0){
+                $validatedData['subtask_status'] = 'onPending';
+                $validatedData['reason']=null;
+            }
+
             $subtask->update($validatedData);
 
 
