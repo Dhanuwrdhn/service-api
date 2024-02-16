@@ -174,7 +174,7 @@ class SubTaskController extends Controller
     // Submit subtask
     public function submitSubtask(Request $request, $id){
         $rules = [
-            'subtask_status' => 'required|in:Completed',
+            'reason'=>'sometimes|string',
             'confirmation_image' => 'required|string', // Ubah validasi gambar menjadi string
         ];
 
@@ -191,20 +191,28 @@ class SubTaskController extends Controller
             DB::beginTransaction();
 
             $subtask = SubTasks::findOrFail($id);
+            
+            //check if subtask status is already on review
+            if($subtask->subtask_status == 'onReview'){
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Subtask already submitted, waiting for review',
+                ], 400);
+            }
 
             // Mendapatkan tanggal sekarang
-            $currentDate = now();
+            $currentDate = (new \DateTime())->format('Y-m-d H:i:s');
 
             // Mendapatkan tanggal berakhir subtask
             $endDate = $subtask->end_date;
 
             // Menghitung selisih hari antara tanggal sekarang dan tanggal berakhir subtask
-            $daysDifference = $currentDate->diffInDays($endDate, false);
+            $daysDifference = (new \DateTime($currentDate))->diff(new \DateTime($endDate))->days;
 
             // Menentukan subtask_submit_status berdasarkan selisih hari
             if ($daysDifference < 0) {
                 $subtaskSubmitStatus = 'earlyFinish'; // Jika selesai sebelum end_date
-            } elseif ($daysDifference == 0) {
+            } elseif ($daysDifference === 0) {
                 $subtaskSubmitStatus = 'finish'; // Jika selesai tepat pada end_date
             } elseif ($daysDifference <= 3) {
                 $subtaskSubmitStatus = 'finish in delay'; // Jika selesai kurang dari atau sama dengan 3 hari setelah end_date
@@ -219,13 +227,23 @@ class SubTaskController extends Controller
             $imageName = uniqid() . '.png'; // Generate nama unik untuk gambar
             $imagePath = 'photos\\' . $imageName; // Path baru untuk menyimpan di public/photos
             $path = public_path($imagePath); // Path lengkap ke direktori public
+            
+            // If an old image exists, delete it
+            if ($subtask->subtask_image) {
+                $oldImagePath = public_path($subtask->subtask_image);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
+            // save image data
             file_put_contents($path, $imageData);
 
             // Simpan path gambar konfirmasi dalam basis data
-            $subtask->update([
-                'subtask_status' => $request->subtask_status,
+            $subtask->update([  
+                'subtask_status' => 'onReview',
                 'subtask_submit_status' => $subtaskSubmitStatus,
-                'subtask_image' => $imagePath, // Simpan path gambar, bukan data biner
+                'subtask_image' => $imagePath,
+                'reason' => $request->reason
             ]);
 
             DB::commit();
@@ -233,7 +251,17 @@ class SubTaskController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Subtask submitted successfully',
-                'data' => $subtask
+                'data' => [
+                    'subtask_name' => $subtask->subtask_name,
+                    'start_date' => $subtask->start_date->format('Y-m-d H:i:s'),
+                    'end_date' => $subtask->end_date->format('Y-m-d H:i:s'),
+                    'submit_time' =>$currentDate,
+                    'day_before_end_date' => $daysDifference,
+                    'subtask_status' => $subtask->subtask_status,
+                    'subtask_submit_status' => $subtask->subtask_submit_status,
+                    'reason' => $subtask->reason? $subtask->reason : null,
+                ],
+
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -435,7 +463,7 @@ class SubTaskController extends Controller
             if($subtask->subtask_status != 'onReview'){
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Subtask cannot be reviewed',
+                    'message' => 'unable to review because status is not onReview, please edit subtask instead',
                 ], 400);
             }
 
