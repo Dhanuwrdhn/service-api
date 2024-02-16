@@ -85,11 +85,13 @@ Route::put('submit-subtask/{id}',[\App\Http\Controllers\SubTaskController::class
 
 // API TOTAL EMPLOYEE PROJECT
 Route::get('total-employeeprojects', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjects']);
-Route::get('total-employeeprojects/{id}', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjectById']);
-Route::get('total-employee/{id}', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeById']);
+Route::get('total-employeeinproject/{project_id}', [\App\Http\Controllers\EmployeeProjectController::class, 'showTotalProjectByIdProject']);
+Route::get('total-projectinemployee/{employee_id}', [\App\Http\Controllers\EmployeeProjectController::class, ' showTotalEmployeeProjectByIdEmployee']);
 // API TOTAL EMPLOYEE TASK
 Route::get('total-employeetasks', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasks']);
-Route::get('total-employeetasks/{id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasksbyId']);
+Route::get('total-employeeintask/{tasks_id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showTotalTaskByIdTask']);
+Route::get('total-taskinemployee/{employee_id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showTotalTaskByIdEmployee']);
+
 // API TOTAL EMPLOYEE TASK
 Route::get('total-employeesubtasks', [\App\Http\Controllers\EmployeeSubTasksController::class, 'showEmployeeSubTasks']);
 Route::get('total-employeesubtasks/{id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasksbyId']);

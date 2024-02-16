@@ -30,84 +30,44 @@ class EmployeeProjectController extends Controller
         'employeeProjects' => $employeeProjects
     ]);
 }
-     public function showEmployeeProjectById($id)
-    {
-     $employeeProjects = EmployeeProject::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_project.employee_id')
-        ->join('mg_projects', 'mg_employee_project.project_id', '=', 'mg_projects.id')
-        ->where('mg_projects.id', $id)
-        ->select('mg_employee_project.*', 'mg_employee.*', 'mg_projects.*')
-        ->get();
+     public function showTotalProjectByIdProject($project_id){
+        $employeeProjects = EmployeeProject::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_project.employee_id')
+            ->join('mg_projects', 'mg_employee_project.project_id', '=', 'mg_projects.id')
+            ->where('mg_employee_project.project_id', $project_id)
+            ->select('mg_employee_project.*', 'mg_employee.*', 'mg_projects.*')
+            ->get();
 
-    if ($employeeProjects->isEmpty()) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'No employee projects found for the specified employee ID.'
-        ], 404);
-    }
-
-    return response()->json([
-        'status' => 'success',
-        'employeeProjects' => $employeeProjects
-    ]);
-    }
-    public function showEmployeeById($id)
-    {
-     $employeeProjects = EmployeeProject::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_project.employee_id')
-        ->join('mg_projects', 'mg_employee_project.project_id', '=', 'mg_projects.id')
-        ->where('mg_employee.id', $id)
-        ->select('mg_employee_project.*', 'mg_employee.*', 'mg_projects.*')
-        ->get();
-
-    if ($employeeProjects->isEmpty()) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'No employee projects found for the specified employee ID.'
-        ], 404);
-    }
-
-    return response()->json([
-        'status' => 'success',
-        'employeeProjects' => $employeeProjects
-    ]);
-    }
-
-    public function create(Request $request)
-    {
-        $rules = [
-            'employee_id' => 'required',
-            'project_id' => 'required',
-        ];
-        $data = $request->all();
-        $validator = Validator::make($data, $rules);
-
-        if ($validator->fails()){
+        if ($employeeProjects->isEmpty()) {
             return response()->json([
                 'status' => 'error',
-                'message' => $validator->errors()
-            ], 400);
+                'message' => 'No employee projects found for the specified employee ID.'
+            ], 404);
         }
 
-        $employee_id = $request->input('employee_id');
-        $employees = Employees::find($employee_id);
-        if(!$employees){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'employee not found'
-            ],400);
-        }
-        $project_id = $request->input('project_id');
-        $projects = Project::find($project_id);
-        if(!$employees){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'project not found'
-            ],400);
-        }
-
-        $employeeProjects = EmployeeProject::create($data);
         return response()->json([
             'status' => 'success',
-            'data' => $projects
-        ], 200);
+            'employeeProjects' => $employeeProjects
+        ]);
+    }
+
+    // show employee in project by id
+        public function showTotalEmployeeProjectByIdEmployee($employee_id){
+        $employeeProjects = EmployeeProject::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_project.employee_id')
+            ->join('mg_projects', 'mg_employee_project.project_id', '=', 'mg_projects.id')
+            ->where('mg_employee_project.employee_id', $employee_id)
+            ->select('mg_employee_project.*', 'mg_employee.*', 'mg_projects.*')
+            ->get();
+
+        if ($employeeProjects->isEmpty()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No employee projects found for the specified employee ID.'
+            ], 404);
+    }
+
+        return response()->json([
+            'status' => 'success',
+            'employeeProjects' => $employeeProjects
+        ]);
     }
 }
