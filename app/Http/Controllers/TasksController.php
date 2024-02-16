@@ -49,7 +49,7 @@ class TasksController extends Controller
         'percentage_task' => 'nullable|string',
         'total_subtask_created' => 'nullable|string',
         'total_subtask_completed' => 'nullable|string',
-        'task_status' => 'required|in:onPending,onReview,workingOnIt,Completed', // Pastikan task_status di antara nilai yang valid
+        'task_status' => 'in:onPending,onReview,workingOnIt,Completed', // Pastikan task_status di antara nilai yang valid
     ];
 
     // Validasi input

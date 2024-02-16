@@ -191,7 +191,7 @@ class SubTaskController extends Controller
             DB::beginTransaction();
 
             $subtask = SubTasks::findOrFail($id);
-            
+
             //check if subtask status is already on review
             if($subtask->subtask_status == 'onReview'){
                 return response()->json([
@@ -227,7 +227,7 @@ class SubTaskController extends Controller
             $imageName = uniqid() . '.png'; // Generate nama unik untuk gambar
             $imagePath = 'photos\\' . $imageName; // Path baru untuk menyimpan di public/photos
             $path = public_path($imagePath); // Path lengkap ke direktori public
-            
+
             // If an old image exists, delete it
             if ($subtask->subtask_image) {
                 $oldImagePath = public_path($subtask->subtask_image);
@@ -239,7 +239,7 @@ class SubTaskController extends Controller
             file_put_contents($path, $imageData);
 
             // Simpan path gambar konfirmasi dalam basis data
-            $subtask->update([  
+            $subtask->update([
                 'subtask_status' => 'onReview',
                 'subtask_submit_status' => $subtaskSubmitStatus,
                 'subtask_image' => $imagePath,
@@ -327,7 +327,7 @@ class SubTaskController extends Controller
     public function acceptSubtask(Request $request, $id){
         try {
             DB::beginTransaction();
-    
+
             $subtask = SubTasks::find($id);
             if(!$subtask){
                 return response()->json([
@@ -335,37 +335,37 @@ class SubTaskController extends Controller
                     'message' => 'Subtask not found'
                 ], 404);
             }
-    
+
             //update isAccepted in employee_subtask
             $employeeSubtask = EmployeeSubtasks::where([
                 'subtasks_id' => $subtask->id,
                 'employee_id' => $request->input('employee_id'),
             ])->first();
-            
+
             if (!$employeeSubtask) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Employee not found or not assigned to this subtask',
                 ], 404);
             }
-    
+
             if ($employeeSubtask->isAccepted) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Subtask already accepted',
                 ], 400);
             }
-    
+
             $employeeSubtask->update([
                 'isAccepted' => true,
             ]);
-    
+
             $subtask->update([
                 'subtask_status' => 'workingOnIt',
             ]);
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Subtask accepted successfully',
@@ -373,7 +373,7 @@ class SubTaskController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-    
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to accept subtask: ' . $e->getMessage()
@@ -385,7 +385,7 @@ class SubTaskController extends Controller
     public function rejectSubtask(Request $request, $id){
         try {
             DB::beginTransaction();
-    
+
             $subtask = SubTasks::find($id);
             if(!$subtask){
                 return response()->json([
@@ -393,20 +393,20 @@ class SubTaskController extends Controller
                     'message' => 'Subtask not found'
                 ], 404);
             }
-    
+
             //update isAccepted in employee_subtask
             $employeeSubtask = EmployeeSubtasks::where([
                 'subtasks_id' => $subtask->id,
                 'employee_id' => $request->input('employee_id'),
             ])->first();
-            
+
             if (!$employeeSubtask) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Employee not found or not assigned to this subtask',
                 ], 404);
             }
-    
+
             if ($employeeSubtask->isAccepted) {
                 return response()->json([
                     'status' => 'error',
@@ -419,18 +419,18 @@ class SubTaskController extends Controller
                     'message' => 'Subtask already rejected, waiting for review',
                 ], 400);
             }
-    
+
             $employeeSubtask->update([
                 'isAccepted' => false,
             ]);
-    
+
             $subtask->update([
                 'subtask_status' => 'onReview',
                 'reason'=> $request->input('reason')
             ]);
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Subtask rejected successfully',
@@ -438,7 +438,7 @@ class SubTaskController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-    
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to reject subtask: ' . $e->getMessage()
@@ -458,7 +458,7 @@ class SubTaskController extends Controller
                     'message' => 'Subtask not found'
                 ], 404);
             }
-            
+
             //check if already reviewed
             if($subtask->subtask_status != 'onReview'){
                 return response()->json([
@@ -476,7 +476,7 @@ class SubTaskController extends Controller
             ]);
             //change reason to null after review
             $validatedData['reason'] = null;
-            //change status to onPending 
+            //change status to onPending
             $validatedData['subtask_status'] = 'onPending';
             $subtask->update($validatedData);
 
