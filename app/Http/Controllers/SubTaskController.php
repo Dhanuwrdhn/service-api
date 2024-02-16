@@ -63,14 +63,17 @@ class SubTaskController extends Controller
 
         // Validasi input
         Validator::extend('not_assigned', function ($attribute, $value, $parameters, $validator) use ($request) {
-            $task_id = $request->input('task_id');
-            $exists = EmployeeSubtasks::where('employee_id', $value)
-                                      ->where('tasks_id', $task_id)
-                                      ->exists();
-            if ($exists) {
+            //Validate to check if employee already assigned with the same subtask name
+            $subtask = SubTasks::join('mg_employee_subtask', 'mg_sub_tasks.id', '=', 'mg_employee_subtask.subtasks_id')
+                                ->where('mg_sub_tasks.subtask_name', $request->input('subtask_name'))
+                                ->where('mg_employee_subtask.employee_id', $value)
+                                ->exists();
+
+            if ($subtask) {
                 return false;
             }
             return true;
+
         }, 'The employee is already assigned to the subtask.');
         $validator = Validator::make($request->all(), $rules);
 
