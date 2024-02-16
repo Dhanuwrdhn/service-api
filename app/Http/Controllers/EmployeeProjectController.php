@@ -30,7 +30,27 @@ class EmployeeProjectController extends Controller
         'employeeProjects' => $employeeProjects
     ]);
 }
-    public function showEmployeeProjectById($id)
+     public function showEmployeeProjectById($id)
+    {
+     $employeeProjects = EmployeeProject::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_project.employee_id')
+        ->join('mg_projects', 'mg_employee_project.project_id', '=', 'mg_projects.id')
+        ->where('mg_projects.id', $id)
+        ->select('mg_employee_project.*', 'mg_employee.*', 'mg_projects.*')
+        ->get();
+
+    if ($employeeProjects->isEmpty()) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'No employee projects found for the specified employee ID.'
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => 'success',
+        'employeeProjects' => $employeeProjects
+    ]);
+    }
+    public function showEmployeeById($id)
     {
      $employeeProjects = EmployeeProject::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_project.employee_id')
         ->join('mg_projects', 'mg_employee_project.project_id', '=', 'mg_projects.id')
@@ -50,7 +70,7 @@ class EmployeeProjectController extends Controller
         'employeeProjects' => $employeeProjects
     ]);
     }
-    
+
     public function create(Request $request)
     {
         $rules = [

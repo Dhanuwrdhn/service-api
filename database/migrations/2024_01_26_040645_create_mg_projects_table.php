@@ -14,6 +14,7 @@
             Schema::create('mg_projects', function (Blueprint $table) {
             $table->id();
             $table->string('project_name');
+            $table->string('project_description')->nullable();
             $table->unsignedBigInteger('assign_by'); // ID employee
             $table->unsignedBigInteger('team_id');
             $table->unsignedBigInteger('role_id');

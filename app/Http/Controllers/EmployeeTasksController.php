@@ -24,7 +24,7 @@ public function showEmployeeTasks()
     if ($employeeTask->isEmpty()) {
         return response()->json([
             'status' => 'error',
-            'message' => 'No employee projects found.'
+            'message' => 'No employee task found.'
         ], 404);
     }
 
