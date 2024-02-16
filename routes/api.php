@@ -86,10 +86,13 @@ Route::put('submit-subtask/{id}',[\App\Http\Controllers\SubTaskController::class
 // API TOTAL EMPLOYEE PROJECT
 Route::get('total-employeeprojects', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjects']);
 Route::get('total-employeeprojects/{id}', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjectById']);
+Route::get('total-employee/{id}', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeById']);
 // API TOTAL EMPLOYEE TASK
 Route::get('total-employeetasks', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasks']);
 Route::get('total-employeetasks/{id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasksbyId']);
-
+// API TOTAL EMPLOYEE TASK
+Route::get('total-employeesubtasks', [\App\Http\Controllers\EmployeeSubTasksController::class, 'showEmployeeSubTasks']);
+Route::get('total-employeesubtasks/{id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasksbyId']);
 
 // API LOGOUT
 Route::delete('logOut/{id}', [\App\Http\Controllers\EmployeesController::class, 'logOut']);
