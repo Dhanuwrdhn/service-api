@@ -78,7 +78,7 @@ Route::get('show-subtasks',[\App\Http\Controllers\SubTaskController::class, 'sho
 Route::put('accept-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'acceptSubTask']);
 Route::put('reject-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'rejectSubTask']);
 Route::put('review-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'reviewSubTask']);
-Route::post('submit-subtask/{id}',[\App\Http\Controllers\SubTaskController::class, 'submitSubtask']);
+Route::put('submit-subtask/{id}',[\App\Http\Controllers\SubTaskController::class, 'submitSubtask']);
 
 // API TOTAL EMPLOYEE PROJECT
 Route::get('total-employeeprojects', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjects']);
