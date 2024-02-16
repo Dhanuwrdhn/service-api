@@ -91,6 +91,10 @@ class TasksController extends Controller
 
         // Menambahkan jumlah tugas yang dibuat ke dalam proyek
         $project->total_task_created += 1;
+
+        //Mengganti status proyek menjadi onWorking
+        $project->project_status = 'workingOnit';
+
         $project->save();
 
         // Commit transaksi database
