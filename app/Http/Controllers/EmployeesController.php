@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\PersonalAccessToken;
+use Laravel\Sanctum\Sanctum;
 
 class EmployeesController extends Controller
 {
@@ -231,11 +233,6 @@ class EmployeesController extends Controller
             'message' => 'employee deleted'
         ]);
     }
-
-
-
-
-
         // login
         public function login(Request $request){
         $credentials = $request->only('username', 'password');
@@ -279,36 +276,40 @@ class EmployeesController extends Controller
         }
     }
 
+    public function getAccessToken($tokenId){
+        $accessToken = PersonalAccessToken::findToken($tokenId);
 
-
-
-
-
-   public function refreshToken(Request $request)
-{
-    $employee = $request->user();
-
-    if (!$employee) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Unauthorized',
-        ], 401);
+        if (!$accessToken) {
+            return response()->json(['message' => 'Access token not found'], 404);
+        }
+        return response()->json(['access_token' => $accessToken]);
     }
 
-    // Hapus semua token pengguna
-    $employee->tokens()->delete();
+//    public function refreshToken(Request $request)
+// {
+//     $employee = $request->user();
 
-    // Buat token baru
-    $token = $employee->createToken('authToken')->plainTextToken;
-    // Simpan token baru di database bersama dengan informasi pengguna yang sesuai
-    $employee->update(['access_token' => $token]);
+//     if (!$employee) {
+//         return response()->json([
+//             'status' => 'error',
+//             'message' => 'Unauthorized',
+//         ], 401);
+//     }
 
-    return response()->json([
-        'status' => 'success',
-        'token' => $token,
-        'message' => 'Token refreshed successfully.',
-    ]);
-}
+//     // Hapus semua token pengguna
+//     $employee->tokens()->delete();
+
+//     // Buat token baru
+//     $token = $employee->createToken('authToken')->plainTextToken;
+//     // Simpan token baru di database bersama dengan informasi pengguna yang sesuai
+//     $employee->update(['access_token' => $token]);
+
+//     return response()->json([
+//         'status' => 'success',
+//         'token' => $token,
+//         'message' => 'Token refreshed successfully.',
+//     ]);
+// }
 
 public function logOut($id)
 {

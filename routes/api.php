@@ -55,13 +55,14 @@ Route::put('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'u
 Route::delete('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'destroy']);
 Route::put('projects-status/{id}', [\App\Http\Controllers\ProjectsController::class, 'updateProjectStatus']);
 Route::get('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'show']);
-//API EMPLOYEE
 
+//API EMPLOYEE
 Route::post('employees', [\App\Http\Controllers\EmployeesController::class, 'create']);
 Route::put('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'update']);
 Route::get('employees', [\App\Http\Controllers\EmployeesController::class, 'index']);
 Route::get('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'show']);
 Route::delete('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'destroy']);
+Route::get('access-tokens/{tokenId}', [\App\Http\Controllers\EmployeesController::class, 'getAccessToken']);
 
 //API ATTENDANCE
 Route::post('attendance', [\App\Http\Controllers\AttendanceController::class, 'attendanceCheckIn']);
