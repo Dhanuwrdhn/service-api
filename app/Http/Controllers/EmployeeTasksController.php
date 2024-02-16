@@ -33,7 +33,7 @@ public function showEmployeeTasks()
         'employeeProjects' => $employeeTask
     ]);
 }
-    public function showEmployeeTasksbyId($id){
+    public function showEmployeebyId($id){
 
         $employeeTask = DB::table('mg_employee_tasks')
         ->join('mg_employee', 'mg_employee.id', '=', 'mg_employee_tasks.employee_id')
@@ -55,6 +55,27 @@ public function showEmployeeTasks()
         'employeeProjects' => $employeeTask
     ]);
 }
+    public function showTaskbyId($id){
 
+        $employeeTask = DB::table('mg_employee_tasks')
+            ->join('mg_employee', 'mg_employee.id', '=', 'mg_employee_tasks.employee_id')
+            ->join('mg_projects', 'mg_projects.id', '=', 'mg_employee_tasks.project_id')
+            ->join('mg_tasks', 'mg_tasks.id', '=', 'mg_employee_tasks.tasks_id')
+            ->select('mg_employee_tasks.*', 'mg_tasks.*', 'mg_projects.*')
+            ->where('mg_tasks.id', $id) // Filter berdasarkan ID karyawan
+            ->get();
+
+        if ($employeeTask->isEmpty()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No employee projects found for the given employee ID.'
+            ], 404);
+    }
+
+        return response()->json([
+            'status' => 'success',
+            'employeeProjects' => $employeeTask
+        ]);
+}
 
 }
