@@ -30,10 +30,10 @@ class EmployeeProjectController extends Controller
         'employeeProjects' => $employeeProjects
     ]);
 }
-     public function showProjectById($id){
+     public function showTotalProjectByIdProject($project_id){
         $employeeProjects = EmployeeProject::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_project.employee_id')
             ->join('mg_projects', 'mg_employee_project.project_id', '=', 'mg_projects.id')
-            ->where('mg_projects.id', $id)
+            ->where('mg_employee_project.project_id', $project_id)
             ->select('mg_employee_project.*', 'mg_employee.*', 'mg_projects.*')
             ->get();
 
@@ -51,10 +51,10 @@ class EmployeeProjectController extends Controller
     }
 
     // show employee in project by id
-        public function showEmployeeById($id){
+        public function showTotalEmployeeProjectByIdEmployee($employee_id){
         $employeeProjects = EmployeeProject::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_project.employee_id')
             ->join('mg_projects', 'mg_employee_project.project_id', '=', 'mg_projects.id')
-            ->where('mg_employee.id', $id)
+            ->where('mg_employee_project.employee_id', $employee_id)
             ->select('mg_employee_project.*', 'mg_employee.*', 'mg_projects.*')
             ->get();
 
