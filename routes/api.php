@@ -94,7 +94,8 @@ Route::get('total-taskinemployee/{employee_id}', [\App\Http\Controllers\Employee
 
 // API TOTAL EMPLOYEE TASK
 Route::get('total-employeesubtasks', [\App\Http\Controllers\EmployeeSubTasksController::class, 'showEmployeeSubTasks']);
-Route::get('total-employeesubtasks/{id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasksbyId']);
+Route::get('total-employeesubtasks/{subtask_id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeSubtaskByIdSubtask']);
+Route::get('total-employeesubtasks/{employee_id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showSubtaskEmployeeByIdEmployee']);
 
 // API LOGOUT
 Route::delete('logOut/{id}', [\App\Http\Controllers\EmployeesController::class, 'logOut']);
