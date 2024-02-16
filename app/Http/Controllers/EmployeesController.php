@@ -236,48 +236,49 @@ class EmployeesController extends Controller
 
 
 
-    // login
-    public function login(Request $request)
-{
-    $credentials = $request->only('username', 'password');
+        // login
+        public function login(Request $request){
+        $credentials = $request->only('username', 'password');
 
-    $validator = Validator::make($credentials, [
-        'username' => 'required|string',
-        'password' => 'required|string',
-    ]);
+        $validator = Validator::make($credentials, [
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $validator->errors()
-        ], 400);
-    }
-
-    $employee = Employees::where('username', $credentials['username'])->first();
-
-    if ($employee && Hash::check($credentials['password'], $employee->password)) {
-        // Cek apakah pengguna memiliki token aktif
-        if ($employee->currentAccessToken()) {
-            $token = $employee->currentAccessToken()->plainTextToken;
-        } else {
-            // Buat token baru jika pengguna tidak memiliki token aktif
-            $token = $employee->createToken('authToken')->plainTextToken;
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $validator->errors()
+            ], 400);
         }
 
-        return response()->json([
-            'status' => 'login success',
-            'token' => $token,
-            'id_employee' => $employee->id,
-            'username_employee' => $employee->username,
-            'roleId_employee' => $employee->role_id,
-        ]);
-    } else {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Invalid credentials',
-        ], 401);
+        $employee = Employees::where('username', $credentials['username'])->first();
+
+        if ($employee && Hash::check($credentials['password'], $employee->password)) {
+            // Cek apakah pengguna memiliki token aktif
+            if ($employee->currentAccessToken()) {
+                // Jika token masih aktif, gunakan token tersebut
+                $token = $employee->currentAccessToken()->plainTextToken;
+            } else {
+                // Jika tidak ada token aktif, buat token baru
+                $token = $employee->createToken('authToken')->plainTextToken;
+            }
+
+            return response()->json([
+                'status' => 'login success',
+                'token' => $token,
+                'id_employee' => $employee->id,
+                'username_employee' => $employee->username,
+                'roleId_employee' => $employee->role_id,
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid credentials',
+            ], 401);
+        }
     }
-}
+
 
 
 

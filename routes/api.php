@@ -13,13 +13,14 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-// API LOGIN
-Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']);
-
  // middleware
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // });
+// API LOGIN
+Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']);
+
+
 
 // // refresh-token
 Route::middleware('auth:sanctum')->group(function () {
