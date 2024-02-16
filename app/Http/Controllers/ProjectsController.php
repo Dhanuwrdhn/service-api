@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ProjectsController extends Controller
 {
+    // get all
     public function index()
     {
         $projects = Project::all();
@@ -24,7 +25,7 @@ class ProjectsController extends Controller
             'data' => $projects
         ]);
     }
-
+    // get all
     public function show($id)
     {
         $projects = Project::find($id);
@@ -40,8 +41,9 @@ class ProjectsController extends Controller
             'data' => $projects
         ]);
     }
-    public function create(Request $request)
-{
+    // Create api Project
+    public function create(Request $request){
+
     $rules = [
         'project_name' => 'required|string',
         'team_id' => 'required|exists:mg_teams,id',
@@ -118,7 +120,7 @@ class ProjectsController extends Controller
 }
 
     // update
-  public function update(Request $request, $id)
+ public function update(Request $request, $id)
 {
     $rules = [
         'project_name' => 'required|string',
@@ -128,10 +130,12 @@ class ProjectsController extends Controller
         'assign_by' => 'required|exists:mg_employee,id',
         'start_date' => 'required|date',
         'end_date' => 'required|date',
-        'project_status' => 'nullable|in:Ongoing,workingOnIt,Completed',
+        'project_status' => 'nullable|in:onPending,workingOnIt,Completed',
         'percentage' => 'nullable|string',
         'total_task_completed' => 'nullable|string',
         'total_task_created' => 'nullable|string',
+        'assign_to' => 'required|array', // Tambahkan validasi untuk assign_to sebagai array
+        'assign_to.*' => 'exists:mg_employee,id', // Tambahkan validasi untuk setiap item di assign_to
     ];
 
     $validator = Validator::make($request->all(), $rules);
@@ -152,12 +156,23 @@ class ProjectsController extends Controller
             throw new \Exception('Proyek tidak ditemukan.');
         }
 
+        // Simpan data proyek yang diupdate
         $project->update($request->all());
 
-        // Update assignees (contoh: string dipisahkan koma)
+        // Update assignees
         $assigneesIds = $request->input('assign_to', []);
+
+        // Sinkronisasi data proyek dengan karyawan yang ditugaskan
         $project->employeeAssignees()->sync($assigneesIds);
 
+        // Update entri di mg_employee_project
+        $project->employeeAssignees()->updateExistingPivot($assigneesIds, [
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            // Tambahkan kolom lain yang perlu diperbarui di sini
+        ]);
+
+        // Simpan perubahan
         DB::commit();
 
         return response()->json([
@@ -170,12 +185,12 @@ class ProjectsController extends Controller
 
         return response()->json([
             'status' => 'error',
-            'message' => 'Gagal memperbarui proyek. ' . $e->getMessage()
+            'message' => $e->getMessage()
         ], 500);
     }
 }
 
-
+    // Delete API
     public function destroy($id)
     {
         $projects = Project::find($id);
@@ -187,7 +202,7 @@ class ProjectsController extends Controller
         }
         $projects->delete();
     }
-
+    //
     public function updateProjectStatus(Request $request, $id)
 {
     $rules = [

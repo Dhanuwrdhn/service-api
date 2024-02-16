@@ -49,7 +49,7 @@ class TasksController extends Controller
         'percentage_task' => 'nullable|string',
         'total_subtask_created' => 'nullable|string',
         'total_subtask_completed' => 'nullable|string',
-        'task_status' => 'required|in:onPending,onReview,workingOnIt,Completed', // Pastikan task_status di antara nilai yang valid
+        'task_status' => 'in:onPending,onReview,workingOnIt,Completed', // Pastikan task_status di antara nilai yang valid
     ];
 
     // Validasi input
@@ -91,6 +91,10 @@ class TasksController extends Controller
 
         // Menambahkan jumlah tugas yang dibuat ke dalam proyek
         $project->total_task_created += 1;
+
+        //Mengganti status proyek menjadi onWorking
+        $project->project_status = 'workingOnit';
+
         $project->save();
 
         // Commit transaksi database
@@ -158,6 +162,7 @@ class TasksController extends Controller
 }
 
     //Show Tasks
+
     //Delete Tasks
      public function destroy($id)
     {

@@ -12,7 +12,8 @@ class EmployeeSubtasks extends Model
     protected $fillable = [
         'employee_id',
         'tasks_id',
-        'subtasks_id'
+        'subtasks_id',
+        'isAccepted',
     ];
 
     protected $casts = [

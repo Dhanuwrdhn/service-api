@@ -23,7 +23,8 @@ return new class extends Migration
 
             $table->timestamp('checkin')->nullable();
             $table->timestamp('checkout')->nullable();
-            $table->boolean('isattended')->default(false);
+            $table->string('status')->nullable();
+            $table->string('note')->nullable();
         });
     }
 

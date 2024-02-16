@@ -23,6 +23,7 @@ return new class extends Migration
             $table->enum('subtask_submit_status', ['earlyFinish', 'finish', 'finish in delay','overdue' ])->nullable();
             $table->string('subtask_percentage')->nullable();
             $table->string('subtask_image')->nullable(); // Ubah kolom untuk menyimpan gambar menjadi tipe data binary
+            $table->string('reason')->nullable();
             $table->timestamps();
 
             $table->foreign('assign_by')->references('id')->on('mg_employee')->onDelete('cascade');

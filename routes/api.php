@@ -13,11 +13,18 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
+ // middleware
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
+
 // });
-// API JOBS
+// API LOGIN
+Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']);
+
+
+
+// // refresh-token
+Route::middleware('auth:sanctum')->group(function () {
+    // API JOBS
 Route::get('jobs', [\App\Http\Controllers\JobsController::class, 'index']);
 Route::get('jobs/{id}', [\App\Http\Controllers\JobsController::class, 'show']);
 Route::post('jobs', [\App\Http\Controllers\JobsController::class, 'create']);
@@ -48,16 +55,21 @@ Route::put('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'u
 Route::delete('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'destroy']);
 Route::put('projects-status/{id}', [\App\Http\Controllers\ProjectsController::class, 'updateProjectStatus']);
 Route::get('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'show']);
+
 //API EMPLOYEE
 Route::post('employees', [\App\Http\Controllers\EmployeesController::class, 'create']);
 Route::put('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'update']);
 Route::get('employees', [\App\Http\Controllers\EmployeesController::class, 'index']);
 Route::get('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'show']);
 Route::delete('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'destroy']);
+Route::get('access-tokens/{tokenId}', [\App\Http\Controllers\EmployeesController::class, 'getAccessToken']);
 
 //API ATTENDANCE
 Route::post('attendance', [\App\Http\Controllers\AttendanceController::class, 'attendanceCheckIn']);
 Route::put('attendance', [\App\Http\Controllers\AttendanceController::class, 'attendanceCheckOut']);
+
+Route::get('attendance', [\App\Http\Controllers\AttendanceController::class, 'getAllAttendance']);
+Route::get('attendance/{id}', [\App\Http\Controllers\AttendanceController::class, 'getAttendanceByEmployee']);
 
 Route::get('checkin/{employee_id}',[\App\Http\Controllers\AttendanceController::class, 'getCheckIn']);
 Route::get('checkout/{employee_id}',[\App\Http\Controllers\AttendanceController::class, 'getCheckOut']);
@@ -67,41 +79,33 @@ Route::get('checkout/{employee_id}',[\App\Http\Controllers\AttendanceController:
 Route::post('create-tasks', [\App\Http\Controllers\TasksController::class, 'createTask']);
 Route::get('show-tasks', [\App\Http\Controllers\TasksController::class, 'index']);
 Route::put('update-status/{id}', [\App\Http\Controllers\TasksController::class, 'updateStatus']);
+
 // API SUBTASKS
-Route::post('create-subtasks', [\App\Http\Controllers\SubTaskController::class, 'createSubTask']);
-Route::get('show-subtasks', [\App\Http\Controllers\SubTaskController::class, 'index']);
-Route::get('show-subtasks/{id}', [\App\Http\Controllers\SubTaskController::class, 'showSubTask']);
+Route::post('create-subtasks', [\App\Http\Controllers\SubTaskController::class, 'createSubTasks']);
+Route::put('edit-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'editSubTask']);
+Route::get('show-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'showSubTask']);
+Route::get('show-subtasks/{task_id}', [\App\Http\Controllers\SubTaskController::class, 'showSubTasksByTask']);
+Route::get('show-subtasks',[\App\Http\Controllers\SubTaskController::class, 'showSubTasksByEmployee']);
+Route::put('accept-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'acceptSubTask']);
+Route::put('reject-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'rejectSubTask']);
+Route::put('review-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'reviewSubTask']);
+Route::put('submit-subtask/{id}',[\App\Http\Controllers\SubTaskController::class, 'submitSubtask']);
 
 // API TOTAL EMPLOYEE PROJECT
 Route::get('total-employeeprojects', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjects']);
-Route::get('total-employeeprojects/{id}', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjectById']);
+Route::get('total-employeeinproject/{project_id}', [\App\Http\Controllers\EmployeeProjectController::class, 'showTotalProjectByIdProject']);
+Route::get('total-projectinemployee/{employee_id}', [\App\Http\Controllers\EmployeeProjectController::class, ' showTotalEmployeeProjectByIdEmployee']);
 // API TOTAL EMPLOYEE TASK
 Route::get('total-employeetasks', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasks']);
-Route::get('total-employeetasks/{id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasksbyId']);
+Route::get('total-employeeintask/{tasks_id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showTotalTaskByIdTask']);
+Route::get('total-taskinemployee/{employee_id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showTotalTaskByIdEmployee']);
 
-// API LOGIN
-Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']);
-// // refresh-token
-// Route::middleware('auth:sanctum')->group(function () {
-// /
-// Route::get('current-access-token', function () {
-//         $employee = auth()->user(); // Use auth() helper to get the authenticated user
+// API TOTAL EMPLOYEE TASK
+Route::get('total-employeesubtasks', [\App\Http\Controllers\EmployeeSubTasksController::class, 'showEmployeeSubTasks']);
+Route::get('total-employeesubtasks/{subtask_id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeSubtaskByIdSubtask']);
+Route::get('total-employeesubtasks/{employeeid}', [\App\Http\Controllers\EmployeeTasksController::class, 'showSubtaskEmployeeByIdEmployee']);
 
-//         // Mendapatkan current access token
-//         $currentAccessToken = $employee->currentAccessToken();
+// API LOGOUT
+Route::delete('logOut/{id}', [\App\Http\Controllers\EmployeesController::class, 'logOut']);
 
-//         if ($currentAccessToken) {
-//             return response()->json([
-//                 'token' => $currentAccessToken->plainTextToken,
-//             ]);
-//         } else {
-//             return response()->json([
-//                 'status' => 'error',
-//                 'message' => 'Employee does not have a valid access token.',
-//             ], 401);
-//         }
-//     });
-
-
-//     Route::post('refresh-token', [\App\Http\Controllers\EmployeesController::class, 'refreshToken']);
-// });
+});

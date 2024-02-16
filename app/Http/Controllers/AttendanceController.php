@@ -34,15 +34,28 @@ class AttendanceController extends Controller
         }
 
         // Buat entri baru di tabel attendance dengan timestamp checkin
-        $checkinTime = (new \DateTime())->format('Y-m-d H:i:s'); // Tambahkan tanggal saat membuat objek DateTime
+        $checkinTimeStamp = (new \DateTime())->format('Y-m-d H:i:s'); // Tambahkan tanggal saat membuat objek DateTime
+
+        //check time if below 08:30 is early, if between 08:30 - 09:00 is on time, if above 09:00 is late then assign to status
+        $checkinTime = new \DateTime($checkinTimeStamp);
+        $status = 'On Time';
+        if ($checkinTime->format('H:i') < '08:30') {
+            $status = 'Early';
+        } elseif ($checkinTime->format('H:i') > '09:00') {
+            $status = 'Late';
+        }
+
+        //reason for late, if status is late, if not, then null
+        $note = $request->input('note', null);
         Attendance::create([
             'employee_id' => $employee_id,
-            'checkin' => $checkinTime,
+            'checkin' => $checkinTimeStamp,
             'checkout' => null,
-            'isattended' => true,
+            'status' => $status,
+            'note' => $note
         ]);
 
-        return response()->json(['message' => 'Check-in successful', 'employee_id' => $employee_id, 'checkin_time' => $checkinTime], 201);
+        return response()->json(['message' => 'Check-in successful','status' => $status, 'employee_id' => $employee_id,'note' => $note, 'checkin_time' => $checkinTimeStamp], 201);
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
@@ -99,9 +112,55 @@ class AttendanceController extends Controller
     }
 }
 
-// Get check-in time for an employee
-public function getCheckIn($employee_id)
-{
+    // GET All Attendance for admin
+    public function getAllAttendance()
+    {
+        try {
+            $attendance = Attendance::all();
+
+            if ($attendance->isEmpty()) {
+                return response()->json(['message' => 'No attendance records found'], 404);
+            }
+
+            return response()->json(['attendance' => $attendance], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to get attendance records: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // GET All Attendance per employee
+    public function getAttendanceByEmployee($employee_id)
+    {
+        try {
+            $employee = Employees::find($employee_id);
+            if (!$employee) {
+                return response()->json(['message' => 'Employee not found'], 404);
+            }
+
+            $attendance = Attendance::where('employee_id', $employee_id)
+                                    ->select('id', 'employee_id', 'checkin', 'checkout', 'status', 'note')
+                                    ->get();
+
+            if ($attendance->isEmpty()) {
+                return response()->json(['message' => 'No attendance records found for the employee'], 404);
+            }
+
+            return response()->json(['attendance' => $attendance], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to get attendance records: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    // Get check-in time for an employee
+    public function getCheckIn($employee_id){
+
     try {
         $employee = Employees::find($employee_id);
         if (!$employee) {
@@ -122,7 +181,12 @@ public function getCheckIn($employee_id)
         $date = $checkin_time[0];
         $time = $checkin_time[1];
 
-        return response()->json(['date' => $date, 'time' => $time], 200);
+        return response()->json([
+            'id' => $checkin->id,
+            'employee_id' => $checkin->employee_id,
+            'date' => $date,
+            'time' => $time
+        ], 200);
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
@@ -154,15 +218,19 @@ public function getCheckOut($employee_id)
         $date = $checkout_time[0];
         $time = $checkout_time[1];
 
-        return response()->json(['date' => $date, 'time' => $time], 200);
+        return response()->json([
+            'id' => $checkout->id,
+            'employee_id' => $checkout->employee_id,
+            'date' => $date,
+            'time' => $time
+        ], 200);
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
             'message' => 'Failed to get check-out time: ' . $e->getMessage()
         ], 500);
     }
-}
-
+}   
 
 }
 

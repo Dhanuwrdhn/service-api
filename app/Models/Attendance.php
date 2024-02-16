@@ -10,12 +10,12 @@ class Attendance extends Model
     use HasFactory;
 
     protected $table = 'mg_attendance';
-    protected $fillable = ['employee_id', 'checkin', 'checkout', 'isattended'];
+    protected $fillable = ['employee_id', 'checkin', 'checkout', 'status'];
 
     protected $casts = [
         'created_at' => 'datetime:Y-m-d H:m:s',
         'updated_at' => 'datetime:Y-m-d H:m:s'
     ];
 
-    
+
 }
