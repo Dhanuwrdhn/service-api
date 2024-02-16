@@ -13,11 +13,17 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+// API LOGIN
+Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']);
 
+ // middleware
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
+
 // });
-// API JOBS
+
+// // refresh-token
+Route::middleware('auth:sanctum')->group(function () {
+    // API JOBS
 Route::get('jobs', [\App\Http\Controllers\JobsController::class, 'index']);
 Route::get('jobs/{id}', [\App\Http\Controllers\JobsController::class, 'show']);
 Route::post('jobs', [\App\Http\Controllers\JobsController::class, 'create']);
@@ -95,33 +101,30 @@ Route::get('total-taskinemployee/{employee_id}', [\App\Http\Controllers\Employee
 // API TOTAL EMPLOYEE TASK
 Route::get('total-employeesubtasks', [\App\Http\Controllers\EmployeeSubTasksController::class, 'showEmployeeSubTasks']);
 Route::get('total-employeesubtasks/{subtask_id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeSubtaskByIdSubtask']);
-Route::get('total-employeesubtasks/{employee_id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showSubtaskEmployeeByIdEmployee']);
+Route::get('total-employeesubtasks/{employeeid}', [\App\Http\Controllers\EmployeeTasksController::class, 'showSubtaskEmployeeByIdEmployee']);
 
 // API LOGOUT
 Route::delete('logOut/{id}', [\App\Http\Controllers\EmployeesController::class, 'logOut']);
-// API LOGIN
-Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']);
-// // refresh-token
-// Route::middleware('auth:sanctum')->group(function () {
-// /
-// Route::get('current-access-token', function () {
-//         $employee = auth()->user(); // Use auth() helper to get the authenticated user
 
-//         // Mendapatkan current access token
-//         $currentAccessToken = $employee->currentAccessToken();
+});
 
-//         if ($currentAccessToken) {
-//             return response()->json([
-//                 'token' => $currentAccessToken->plainTextToken,
-//             ]);
-//         } else {
-//             return response()->json([
-//                 'status' => 'error',
-//                 'message' => 'Employee does not have a valid access token.',
-//             ], 401);
-//         }
-//     });
+Route::get('current-access-token', function () {
+        $employee = auth()->user(); // Use auth() helper to get the authenticated user
+
+        // Mendapatkan current access token
+        $currentAccessToken = $employee->currentAccessToken();
+
+        if ($currentAccessToken) {
+            return response()->json([
+                'token' => $currentAccessToken->plainTextToken,
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Employee does not have a valid access token.',
+            ], 401);
+        }
+    });
 
 
-//     Route::post('refresh-token', [\App\Http\Controllers\EmployeesController::class, 'refreshToken']);
-// });
+    Route::post('refresh-token', [\App\Http\Controllers\EmployeesController::class, 'refreshToken']);

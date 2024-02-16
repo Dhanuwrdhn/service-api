@@ -137,9 +137,6 @@ class EmployeesController extends Controller
         }
     }
 
-
-
-
     // update employee
     public function update(Request $request, $id){
         $rules=[
@@ -241,7 +238,7 @@ class EmployeesController extends Controller
 
     // login
     public function login(Request $request)
-    {
+{
     $credentials = $request->only('username', 'password');
 
     $validator = Validator::make($credentials, [
@@ -259,16 +256,20 @@ class EmployeesController extends Controller
     $employee = Employees::where('username', $credentials['username'])->first();
 
     if ($employee && Hash::check($credentials['password'], $employee->password)) {
-        $token = $employee->createToken('authToken')->plainTextToken;
-          // Simpan token di database bersama dengan informasi pengguna yang sesuai
-        $employee->update(['access_token' => $token]);
+        // Cek apakah pengguna memiliki token aktif
+        if ($employee->currentAccessToken()) {
+            $token = $employee->currentAccessToken()->plainTextToken;
+        } else {
+            // Buat token baru jika pengguna tidak memiliki token aktif
+            $token = $employee->createToken('authToken')->plainTextToken;
+        }
 
         return response()->json([
             'status' => 'login success',
             'token' => $token,
-            'id_employee'=> $employee->id,// Include user details if needed
-            'username_employee'=> $employee->username,
-            'roleId_employee'=> $employee->role_id,// Include user details if needed
+            'id_employee' => $employee->id,
+            'username_employee' => $employee->username,
+            'roleId_employee' => $employee->role_id,
         ]);
     } else {
         return response()->json([
@@ -277,6 +278,7 @@ class EmployeesController extends Controller
         ], 401);
     }
 }
+
 
 
 
