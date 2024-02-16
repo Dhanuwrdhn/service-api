@@ -46,16 +46,16 @@ class AttendanceController extends Controller
         }
 
         //reason for late, if status is late, if not, then null
-        $reason = $request->input('reason', null);
+        $note = $request->input('note', null);
         Attendance::create([
             'employee_id' => $employee_id,
             'checkin' => $checkinTime,
             'checkout' => null,
             'status' => $status,
-            'reason' => $reason
+            'note' => $note
         ]);
 
-        return response()->json(['message' => 'Check-in successful', 'employee_id' => $employee_id, 'checkin_time' => $checkinTime], 201);
+        return response()->json(['message' => 'Check-in successful','status' => $status, 'employee_id' => $employee_id,'note' => $note, 'checkin_time' => $checkinTime], 201);
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
@@ -111,6 +111,52 @@ class AttendanceController extends Controller
         ], 500);
     }
 }
+
+    // GET All Attendance for admin
+    public function getAllAttendance()
+    {
+        try {
+            $attendance = Attendance::all();
+
+            if ($attendance->isEmpty()) {
+                return response()->json(['message' => 'No attendance records found'], 404);
+            }
+
+            return response()->json(['attendance' => $attendance], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to get attendance records: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // GET All Attendance per employee
+    public function getAttendanceByEmployee($employee_id)
+    {
+        try {
+            $employee = Employees::find($employee_id);
+            if (!$employee) {
+                return response()->json(['message' => 'Employee not found'], 404);
+            }
+
+            $attendance = Attendance::where('employee_id', $employee_id)
+                                    ->select('id', 'employee_id', 'checkin', 'checkout', 'status', 'note')
+                                    ->get();
+
+            if ($attendance->isEmpty()) {
+                return response()->json(['message' => 'No attendance records found for the employee'], 404);
+            }
+
+            return response()->json(['attendance' => $attendance], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to get attendance records: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     // Get check-in time for an employee
     public function getCheckIn($employee_id){
@@ -184,8 +230,7 @@ public function getCheckOut($employee_id)
             'message' => 'Failed to get check-out time: ' . $e->getMessage()
         ], 500);
     }
-}
-
+}   
 
 }
 
