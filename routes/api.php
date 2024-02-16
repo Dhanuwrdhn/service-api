@@ -108,24 +108,3 @@ Route::get('total-employeesubtasks/{employeeid}', [\App\Http\Controllers\Employe
 Route::delete('logOut/{id}', [\App\Http\Controllers\EmployeesController::class, 'logOut']);
 
 });
-
-Route::get('current-access-token', function () {
-        $employee = auth()->user(); // Use auth() helper to get the authenticated user
-
-        // Mendapatkan current access token
-        $currentAccessToken = $employee->currentAccessToken();
-
-        if ($currentAccessToken) {
-            return response()->json([
-                'token' => $currentAccessToken->plainTextToken,
-            ]);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Employee does not have a valid access token.',
-            ], 401);
-        }
-    });
-
-
-    Route::post('refresh-token', [\App\Http\Controllers\EmployeesController::class, 'refreshToken']);

@@ -17,5 +17,5 @@ class Attendance extends Model
         'updated_at' => 'datetime:Y-m-d H:m:s'
     ];
 
-    
+
 }
