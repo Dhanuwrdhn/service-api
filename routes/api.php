@@ -17,14 +17,7 @@ use Illuminate\Support\Facades\Route;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // });
-// API LOGIN
-Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']);
-
-
-
-// // refresh-token
-Route::middleware('auth:sanctum')->group(function () {
-    // API JOBS
+// API JOBS
 Route::get('jobs', [\App\Http\Controllers\JobsController::class, 'index']);
 Route::get('jobs/{id}', [\App\Http\Controllers\JobsController::class, 'show']);
 Route::post('jobs', [\App\Http\Controllers\JobsController::class, 'create']);
@@ -55,15 +48,13 @@ Route::put('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'u
 Route::delete('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'destroy']);
 Route::put('projects-status/{id}', [\App\Http\Controllers\ProjectsController::class, 'updateProjectStatus']);
 Route::get('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'show']);
-
 //API EMPLOYEE
 Route::post('employees', [\App\Http\Controllers\EmployeesController::class, 'create']);
 Route::put('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'update']);
 Route::get('employees', [\App\Http\Controllers\EmployeesController::class, 'index']);
 Route::get('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'show']);
-Route::delete('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'destroy']);
 Route::get('access-tokens/{tokenId}', [\App\Http\Controllers\EmployeesController::class, 'getAccessToken']);
-
+Route::delete('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'destroy']);
 //API ATTENDANCE
 Route::post('attendance', [\App\Http\Controllers\AttendanceController::class, 'attendanceCheckIn']);
 Route::put('attendance', [\App\Http\Controllers\AttendanceController::class, 'attendanceCheckOut']);
@@ -107,5 +98,15 @@ Route::get('total-employeesubtasks/{employeeid}', [\App\Http\Controllers\Employe
 
 // API LOGOUT
 Route::delete('logOut/{id}', [\App\Http\Controllers\EmployeesController::class, 'logOut']);
+
+// API LOGIN
+Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']);
+
+
+
+// // refresh-token
+Route::middleware('auth:sanctum')->group(function () {
+
+
 
 });

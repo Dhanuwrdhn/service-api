@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-use Laravel\Sanctum\PersonalAccessToken;
-use Laravel\Sanctum\Sanctum;
 
 class EmployeesController extends Controller
 {
@@ -214,76 +212,80 @@ class EmployeesController extends Controller
         ]);
     }
 
-    //delete
-    public function destroy($id)
-    {
-        $employee = Employees::find($id);
+        //delete
+        public function destroy($id){
 
-        if (!$employee) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'employee not found'
-            ]);
-        }
+            $employee = Employees::find($id);
 
-        $employee->delete();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'employee deleted'
-        ]);
-    }
-        // login
-        public function login(Request $request){
-        $credentials = $request->only('username', 'password');
-
-        $validator = Validator::make($credentials, [
-            'username' => 'required|string',
-            'password' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $validator->errors()
-            ], 400);
-        }
-
-        $employee = Employees::where('username', $credentials['username'])->first();
-
-        if ($employee && Hash::check($credentials['password'], $employee->password)) {
-            // Cek apakah pengguna memiliki token aktif
-            if ($employee->currentAccessToken()) {
-                // Jika token masih aktif, gunakan token tersebut
-                $token = $employee->currentAccessToken()->plainTextToken;
-            } else {
-                // Jika tidak ada token aktif, buat token baru
-                $token = $employee->createToken('authToken')->plainTextToken;
+            if (!$employee) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'employee not found'
+                ]);
             }
 
+            $employee->delete();
+
             return response()->json([
-                'status' => 'login success',
-                'token' => $token,
-                'id_employee' => $employee->id,
-                'username_employee' => $employee->username,
-                'roleId_employee' => $employee->role_id,
+                'status' => 'success',
+                'message' => 'employee deleted'
             ]);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid credentials',
-            ], 401);
         }
-    }
+        // login
+        public function login(Request $request){
 
-    public function getAccessToken($tokenId){
-        $accessToken = PersonalAccessToken::findToken($tokenId);
+            $credentials = $request->only('username', 'password');
 
-        if (!$accessToken) {
-            return response()->json(['message' => 'Access token not found'], 404);
+            $validator = Validator::make($credentials, [
+                'username' => 'required|string',
+                'password' => 'required|string',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $validator->errors()
+                ], 400);
+            }
+
+            $employee = Employees::where('username', $credentials['username'])->first();
+
+            if ($employee && Hash::check($credentials['password'], $employee->password)) {
+                // Cek apakah pengguna memiliki token aktif
+                if ($employee->currentAccessToken()) {
+                // Jika token masih aktif, gunakan token tersebut
+                    $token = $employee->currentAccessToken()->plainTextToken;
+                } else {
+                    // Jika tidak ada token aktif, buat token baru
+                    $token = $employee->createToken('authToken', ['*'])->plainTextToken;
+                    $employee->tokens()->where('tokenable_id', $employee->id)->delete(); // Hapus token lama jika ada
+                    $employee->tokens()->create(['token' => hash('sha256', $token), 'name' => 'authToken', 'expires_at' => now()->addDay()]);
+
+                }
+                return response()->json([
+                    'status' => 'login success',
+                    'token' => $token,
+                    'id_employee' => $employee->id,
+                    'username_employee' => $employee->username,
+                    'roleId_employee' => $employee->role_id,
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid credentials',
+                ], 401);
+            }
         }
-        return response()->json(['access_token' => $accessToken]);
-    }
+
+        public function getAccessToken($tokenId){
+            $accessToken = PersonalAccessToken::findToken($tokenId);
+
+            if (!$accessToken) {
+                return response()->json(['message' => 'Access token not found'], 404);
+            }
+
+            return response()->json(['access_token' => $accessToken]);
+            }
 
 //    public function refreshToken(Request $request)
 // {
