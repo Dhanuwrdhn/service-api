@@ -22,6 +22,19 @@ class TasksController extends Controller
             'data' => $tasks
         ]);
     }
+
+    // Show All Task by project id
+    public function showByProject($projectId)
+    {
+        $tasks = Task::where('project_id', $projectId)->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $tasks
+        ]);
+    }
+
+
     //Create Tasks
     public function createTask(Request $request)
 {
