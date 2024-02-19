@@ -1,5 +1,5 @@
 apps:
-  - name: Backend-Server-Production
+  - name: Laravel-Process
     script: artisan
     interpreter: php
     args:
