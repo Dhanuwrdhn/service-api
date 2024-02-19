@@ -1,5 +1,5 @@
 apps:
-  - name: artisan-serve
+  - name: Backend-Server-Production
     script: artisan
     interpreter: php
     args:
