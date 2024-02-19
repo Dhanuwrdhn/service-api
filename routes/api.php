@@ -1,113 +1,47 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
- // middleware
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-
-// });
 // API JOBS
-Route::get('jobs', [\App\Http\Controllers\JobsController::class, 'index']);
-Route::get('jobs/{id}', [\App\Http\Controllers\JobsController::class, 'show']);
-Route::post('jobs', [\App\Http\Controllers\JobsController::class, 'create']);
-Route::put('jobs/{id}', [\App\Http\Controllers\JobsController::class, 'update']);
-Route::delete('jobs/{id}', [\App\Http\Controllers\JobsController::class, 'destroy']);
+require __DIR__.'/api/jobs.routes.php';
+
 // API TEAMS
-Route::get('teams', [\App\Http\Controllers\TeamsController::class, 'index']);
-Route::post('teams', [\App\Http\Controllers\TeamsController::class, 'create']);
-Route::put('teams/{id}', [\App\Http\Controllers\TeamsController::class, 'update']);
-Route::delete('teams/{id}', [\App\Http\Controllers\TeamsController::class, 'destroy']);
-Route::get('teams/{id}', [\App\Http\Controllers\TeamsController::class, 'show']);
-// API CLIENT
-Route::get('clients', [\App\Http\Controllers\ClientsController::class, 'index']);
-Route::post('clients', [\App\Http\Controllers\ClientsController::class, 'create']);
-Route::put('clients/{id}', [\App\Http\Controllers\ClientsController::class, 'update']);
-Route::delete('clients/{id}', [\App\Http\Controllers\ClientsController::class, 'destroy']);
-Route::get('clients/{id}', [\App\Http\Controllers\ClientsController::class, 'show']);
-//API ROLE
-Route::get('roles', [\App\Http\Controllers\RolesController::class, 'index']);
-Route::post('roles', [\App\Http\Controllers\RolesController::class, 'create']);
-Route::put('roles/{id}', [\App\Http\Controllers\RolesController::class, 'update']);
-Route::delete('roles/{id}', [\App\Http\Controllers\RolesController::class, 'destroy']);
-Route::get('roles/{id}', [\App\Http\Controllers\RolesController::class, 'show']);
-// API PROJECT
-Route::get('projects', [\App\Http\Controllers\ProjectsController::class, 'index']);
-Route::post('projects', [\App\Http\Controllers\ProjectsController::class, 'create']);
-Route::put('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'update']);
-Route::delete('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'destroy']);
-Route::put('projects-status/{id}', [\App\Http\Controllers\ProjectsController::class, 'updateProjectStatus']);
-Route::get('projects/{id}', [\App\Http\Controllers\ProjectsController::class, 'show']);
-//API EMPLOYEE
-Route::post('employees', [\App\Http\Controllers\EmployeesController::class, 'create']);
-Route::put('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'update']);
-Route::get('employees', [\App\Http\Controllers\EmployeesController::class, 'index']);
-Route::get('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'show']);
-Route::get('access-tokens/{tokenId}', [\App\Http\Controllers\EmployeesController::class, 'getAccessToken']);
-Route::delete('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'destroy']);
-//API ATTENDANCE
-Route::post('attendance', [\App\Http\Controllers\AttendanceController::class, 'attendanceCheckIn']);
-Route::put('attendance', [\App\Http\Controllers\AttendanceController::class, 'attendanceCheckOut']);
+require __DIR__.'/api/teams.routes.php';
 
-Route::get('attendance', [\App\Http\Controllers\AttendanceController::class, 'getAllAttendance']);
-Route::get('attendance/{id}', [\App\Http\Controllers\AttendanceController::class, 'getAttendanceByEmployee']);
+// API CLIENTS
+require __DIR__.'/api/client.routes.php';
 
-Route::get('checkin/{employee_id}',[\App\Http\Controllers\AttendanceController::class, 'getCheckIn']);
-Route::get('checkout/{employee_id}',[\App\Http\Controllers\AttendanceController::class, 'getCheckOut']);
+// API ROLES
+require __DIR__.'/api/role.routes.php';
 
+// API PROJECTS
+require __DIR__.'/api/project.routes.php';
 
-// API TASK
-Route::post('create-tasks', [\App\Http\Controllers\TasksController::class, 'createTask']);
-Route::get('show-tasks', [\App\Http\Controllers\TasksController::class, 'index']);
-Route::get('show-tasks-by-project/{projectid}', [\App\Http\Controllers\TasksController::class, 'showByProject']);
-Route::put('update-status/{id}', [\App\Http\Controllers\TasksController::class, 'updateStatus']);
+// API EMPLOYEES
+require __DIR__.'/api/employee.routes.php';
+
+// API ATTENDANCE
+require __DIR__.'/api/attendance.routes.php';
+
+// API TASKS
+require __DIR__.'/api/task.routes.php';
 
 // API SUBTASKS
-Route::post('create-subtasks', [\App\Http\Controllers\SubTaskController::class, 'createSubTasks']);
-Route::put('edit-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'editSubTask']);
-Route::get('show-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'showSubTask']);
-Route::get('show-subtasks/{task_id}', [\App\Http\Controllers\SubTaskController::class, 'showSubTasksByTask']);
-Route::get('show-subtasks',[\App\Http\Controllers\SubTaskController::class, 'showSubTasksByEmployee']);
-Route::put('accept-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'acceptSubTask']);
-Route::put('reject-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'rejectSubTask']);
-Route::put('review-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'reviewSubTask']);
-Route::put('submit-subtask/{id}',[\App\Http\Controllers\SubTaskController::class, 'submitSubtask']);
+require __DIR__.'/api/subtask.routes.php';
 
-// API TOTAL EMPLOYEE PROJECT
-Route::get('total-employeeprojects', [\App\Http\Controllers\EmployeeProjectController::class, 'showEmployeeProjects']);
-Route::get('total-employeeinproject/{project_id}', [\App\Http\Controllers\EmployeeProjectController::class, 'showTotalProjectByIdProject']);
-Route::get('total-projectinemployee/{employee_id}', [\App\Http\Controllers\EmployeeProjectController::class, ' showTotalEmployeeProjectByIdEmployee']);
-// API TOTAL EMPLOYEE TASK
-Route::get('total-employeetasks', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeTasks']);
-Route::get('total-employeeintask/{tasks_id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showTotalTaskByIdTask']);
-Route::get('total-taskinemployee/{employee_id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showTotalTaskByIdEmployee']);
+// API EMPLOYEE PROJECTS
+require __DIR__.'/api/employeeProject.routes.php';
 
-// API TOTAL EMPLOYEE TASK
-Route::get('total-employeesubtasks', [\App\Http\Controllers\EmployeeSubTasksController::class, 'showEmployeeSubTasks']);
-Route::get('total-employeesubtasks/{subtask_id}', [\App\Http\Controllers\EmployeeTasksController::class, 'showEmployeeSubtaskByIdSubtask']);
-Route::get('total-employeesubtasks/{employeeid}', [\App\Http\Controllers\EmployeeTasksController::class, 'showSubtaskEmployeeByIdEmployee']);
+// API EMPLOYEE TASKS
+require __DIR__.'/api/employeeTask.routes.php';
 
-// API LOGOUT
-Route::delete('logOut/{id}', [\App\Http\Controllers\EmployeesController::class, 'logOut']);
+// API EMPLOYEE SUBTASKS
+require __DIR__.'/api/employeeSubtask.routes.php';
 
-// API LOGIN
-Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']);
+// API Authentication
+require __DIR__.'/api/auth.routes.php';
 
-
-
-// // refresh-token
+// refresh-token
 Route::middleware('auth:sanctum')->group(function () {
-
-
-
+    // You can add any middleware-specific routes here
 });
