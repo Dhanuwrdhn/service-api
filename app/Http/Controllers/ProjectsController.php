@@ -201,60 +201,65 @@ class ProjectsController extends Controller
             ], 404);
         }
         $projects->delete();
-    }
-    //
-    public function updateProjectStatus(Request $request, $id)
-{
-    $rules = [
-        'project_status' => 'required|in:onPending,workingOnIt,Completed',
-    ];
-
-    $validator = Validator::make($request->all(), $rules);
-
-    if ($validator->fails()) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $validator->errors(),
-        ], 400);
-    }
-
-    try {
-        DB::beginTransaction();
-
-        $project = Project::find($id);
-
-        if (!$project) {
-            throw new \Exception('Project not found');
-        }
-
-        $oldStatus = $project->project_status; // Simpan status proyek sebelum pembaruan
-
-        $project->update($request->only('project_status'));
-
-        // Bandingkan status sebelum dan setelah pembaruan
-        if ($oldStatus === $project->project_status) {
             return response()->json([
                 'status' => 'success',
-                'message' => 'No changes detected in project status',
-                'data' => $project->toArray(),
+                'message' => 'project deleted'
             ]);
         }
 
-        DB::commit();
+    //Update Project Status
+    public function updateProjectStatus(Request $request, $id){
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Project updated successfully',
-            'data' => $project->toArray(),
-        ]);
-    } catch (\Exception $e) {
-        DB::rollBack();
+        $rules = [
+            'project_status' => 'required|in:onPending,workingOnIt,Completed',
+        ];
 
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Failed to update project: ' . $e->getMessage(),
-        ], 500);
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $validator->errors(),
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $project = Project::find($id);
+
+            if (!$project) {
+                throw new \Exception('Project not found');
+            }
+
+            $oldStatus = $project->project_status; // Simpan status proyek sebelum pembaruan
+
+            $project->update($request->only('project_status'));
+
+            // Bandingkan status sebelum dan setelah pembaruan
+            if ($oldStatus === $project->project_status) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'No changes detected in project status',
+                    'data' => $project->toArray(),
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Project updated successfully',
+                'data' => $project->toArray(),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update project: ' . $e->getMessage(),
+            ], 500);
+        }
     }
-}
 
 }

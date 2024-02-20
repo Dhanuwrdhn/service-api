@@ -108,6 +108,5 @@ Route::post('login', [\App\Http\Controllers\EmployeesController::class, 'login']
 // // refresh-token
 Route::middleware('auth:sanctum')->group(function () {
 
-
-
+    Route::get('employees/{id}', [\App\Http\Controllers\EmployeesController::class, 'show']);
 });
