@@ -138,24 +138,27 @@ class EmployeesController extends Controller
             ], 500);
         }
     }
-
-    // update employee
     public function update(Request $request, $id){
-        $rules=[
-          'role_id' => 'required|integer',
-          'jobs_id' => 'required|integer',
-          'team_id' => 'required|integer',
-          'employee_name' => 'required|string',
-          'date_of_birth' => 'date',
-          'age' => 'string',
-          'mobile_number' => 'string',
-          'email' => 'required|email|unique:mg_employee,email',
-          'username' => 'required|string',
-          'password' => 'required|string|min:8',
-          'gender' => 'required|in:male,female',
-          'religion' => 'string',
-          'npwp_number' => 'string',
-          'identity_number' => 'string',
+        $rules = [
+            'role_id' => 'required|integer',
+            'jobs_id' => 'required|integer',
+            'team_id' => 'required|integer',
+            'employee_name' => 'required|string',
+            'date_of_birth' => 'date',
+            'age' => 'string',
+            'mobile_number' => 'string',
+            'email' => 'required|email|unique:mg_employee,email',
+            'username' => 'required|string',
+            'password' => [
+                'required',
+                'string',
+                'min:8', // Minimal 8 karakter
+                'regex:/^(?=.*[A-Z])(?=.*[!@#$%^&*()-_=+{};:,<.>ยง~]).*$/', // Minimal satu huruf kapital dan satu simbol
+            ],
+            'gender' => 'in:male,female',
+            'religion' => 'string',
+            'npwp_number' => 'string',
+            'identity_number' => 'string',
         ];
         $data = $request->all();
 
@@ -167,6 +170,7 @@ class EmployeesController extends Controller
                 'message' => $validator->errors()
             ], 400);
         }
+
         $employee = Employees::find($id);
         if (!$employee) {
             return response()->json([
@@ -174,37 +178,18 @@ class EmployeesController extends Controller
                 'message' => 'Employee not found'
             ], 404);
         }
-        $roleId = $request->input('role_id');
-        if ($roleId) {
-            $roleId = Role::find($roleId);
-            if (!$roleId) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'roles not found'
-                ], 404);
-            }
+
+        // Memastikan password sesuai dengan aturan yang ditentukan
+        $password = $request->input('password');
+        if (!preg_match('/^(?=.*[A-Z])(?=.*[!@#$%^&*()-_=+{};:,<.>ยง~]).*$/', $password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Password must contain at least 8 characters, one uppercase letter, and one symbol'
+            ], 400);
         }
-        $jobId = $request->input('jobs_id');
-        if ($jobId) {
-            $jobId = Job::find($jobId);
-            if (!$jobId) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'jobs not found'
-                ], 404);
-            }
-        }
-        $teamId = $request->input('team_id');
-        if ($teamId) {
-            $teamId = Team::find($teamId);
-            if (!$teamId) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'teams not found'
-                ], 404);
-            }
-        }
-        $employee->password = Hash::make($request->input('password'));
+
+        // Jika semua validasi berhasil, lanjutkan dengan mengubah password dan menyimpan data employee
+        $employee->password = Hash::make($password);
         $employee->fill($data);
         $employee->save();
 

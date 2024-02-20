@@ -493,16 +493,16 @@ class SubTaskController extends Controller
                 'end_date' => 'sometimes|date',
                 'subtask_status' => 'sometimes|string',
             ]);
-            
+
             // there is 2 condition when a subtask is on review, either the user rejected an pending task and admin has to review it, or the user submit the task and admin has to review it
-            // if the user rejected the task, the status will be onReview, and the reason why they rejectwill be filled 
+            // if the user rejected the task, the status will be onReview, and the reason why they rejectwill be filled
             // then admin will review the task, and change the status to onPending
             // if the user submit the task, the status will be onReview with confirmation image, and the reason will be filled
             // then admin will review the task, and change the status to completed
-            
+
             if ($subtask->subtask_image != null){
                 $validatedData['subtask_status'] = 'Completed';
-                
+
                 //update Task informations
                 $updateTask = Task::find($subtask->task_id);
                 $updateTask->total_subtask_completed += 1;
