@@ -293,8 +293,6 @@ class EmployeesController extends Controller
     public function getAccessToken($tokenId) {
         $accessToken = AccessToken::find($tokenId);
 
-
-
         if (!$accessToken) {
             return response()->json(['message' => 'Access token not found'], 404);
         }
