@@ -258,7 +258,7 @@ class EmployeesController extends Controller
             ], 401);
         }
 
-        $currentToken = $employee->tokens()->latest()->first();
+        $currentToken =  $employee->tokens()->latest()->first();
 
         //check if token expired
         $expiresAt = Carbon::parse($currentToken->expires_at);
