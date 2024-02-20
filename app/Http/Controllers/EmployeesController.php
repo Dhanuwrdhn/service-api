@@ -271,7 +271,7 @@ class EmployeesController extends Controller
             $expiresAt = now()->addHours(24)->toDateTimeString();
 
             // Set the new expiration date for the newly created token
-            $newToken->update(['expires_at' => $expiresAt]);
+            $newToken->fill(['expires_at' => $expiresAt]);
 
             return response()->json([
                 'status' => 'login success',
@@ -284,8 +284,14 @@ class EmployeesController extends Controller
         }else {
             // If the token is not expired, return the existing token
             return response()->json([
+                'status' => 'login success',
+                'data'=> $employee,
                 'message' => 'not expired',
                 'token' => $currentToken->plainTextToken,
+                'id_employee' => $employee->id,
+                'username_employee' => $employee->username,
+                'roleId_employee' => $employee->role_id,
+                'expires_at' => $expiresAt,
             ]);
         }
     }
