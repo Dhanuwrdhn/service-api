@@ -113,10 +113,9 @@ class EmployeesController extends Controller
             $data['username'] = $username;
             $data['email'] = $email;
 
-            // Generate password from last name and date_of_birth
-            $dob = str_replace('-', '', $data['date_of_birth']);
+            // Generate password from date_of_birth
             $dobFormatted = date_create_from_format('Y-m-d', $data['date_of_birth'])->format('dmY');
-            $password = strtolower($lastName) . $dobFormatted;
+            $password = $dobFormatted;
 
             // Hash the password and create employee
             $data['password'] = Hash::make($password);
@@ -257,7 +256,7 @@ class EmployeesController extends Controller
                 'status' => 'error',
                 'message' => 'Invalid credentials',
             ], 401);
-        }        
+        }
 
         $currentToken = $employee->tokens()->latest()->first();
 
@@ -293,7 +292,7 @@ class EmployeesController extends Controller
 
     public function getAccessToken($tokenId) {
         $accessToken = AccessToken::find($tokenId);
-        
+
 
 
         if (!$accessToken) {
