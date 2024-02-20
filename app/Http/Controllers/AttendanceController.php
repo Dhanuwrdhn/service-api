@@ -46,7 +46,7 @@ class AttendanceController extends Controller
         }
 
         //reason for late, if status is late, if not, then null
-        $note = $request->input('note', null);
+        $note = $request->input('note') ?? null;
         Attendance::create([
             'employee_id' => $employee_id,
             'checkin' => $checkinTimeStamp,
