@@ -261,6 +261,10 @@ class EmployeesController extends Controller
     // Get the current access token
     $token = $employee->createToken('authToken')->plainTextToken;
 
+    // Set token expiration time to 24 hours (1 day) from now
+    $tokenModel = AccessToken::findToken($token);
+    $tokenModel->update(['expires_at' => now()->addDay()]);
+
     return response()->json([
         'status' => 'login success',
         'token' => $token,
@@ -268,9 +272,11 @@ class EmployeesController extends Controller
         'username_employee' => $employee->username,
         'roleId_employee' => $employee->role_id,
         // You can set custom expiration time here if needed
-        'expires_at' => null, // Since Sanctum uses its own way to handle expiration
+        'expires_at' => now()->addDay()->toDateTimeString(), // 24 hours from now
     ]);
 }
+
+
 
     public function getAccessToken($tokenId) {
         $accessToken = AccessToken::find($tokenId);
