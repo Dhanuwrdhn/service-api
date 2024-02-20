@@ -32,4 +32,5 @@ require __DIR__.'/api/auth.routes.php';
 // refresh-token
 Route::middleware('auth:sanctum')->group(function () {
     // You can add any middleware-specific routes here
+    Route::get('roles', [\App\Http\Controllers\RolesController::class, 'index']);
 });

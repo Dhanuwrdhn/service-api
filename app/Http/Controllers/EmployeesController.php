@@ -235,66 +235,42 @@ class EmployeesController extends Controller
     }
     // login
     public function login(Request $request) {
-        $credentials = $request->only('username', 'password');
+    $credentials = $request->only('username', 'password');
 
-        $validator = Validator::make($credentials, [
-            'username' => 'required|string',
-            'password' => 'required|string',
-        ]);
+    $validator = Validator::make($credentials, [
+        'username' => 'required|string',
+        'password' => 'required|string',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $validator->errors()
-            ], 400);
-        }
-
-        // check credentials
-        $employee = Employees::where('username', $credentials['username'])->first();
-        if(!($employee && Hash::check($credentials['password'], $employee->password))){
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid credentials',
-            ], 401);
-        }
-
-        $currentToken =  $employee->tokens()->latest()->first();
-
-        //check if token expired
-        $expiresAt = Carbon::parse($currentToken->expires_at);
-        if ($expiresAt->isPast()) {
-            // If the token is expired, delete it
-            $currentToken->delete();
-
-            // Create a new token with a new expiration date
-            $newToken = $employee->createToken('authToken', ['*']);
-            $expiresAt = now()->addHours(24)->toDateTimeString();
-
-            // Set the new expiration date for the newly created token
-            $newToken->fill(['expires_at' => $expiresAt]);
-
-            return response()->json([
-                'status' => 'login success',
-                'token' => $newToken->plainTextToken,
-                'id_employee' => $employee->id,
-                'username_employee' => $employee->username,
-                'roleId_employee' => $employee->role_id,
-                'expires_at' => $expiresAt,
-            ]);
-        }else {
-            // If the token is not expired, return the existing token
-            return response()->json([
-                'status' => 'login success',
-                'data'=> $employee,
-                'message' => 'not expired',
-                'token' => $currentToken->plainTextToken,
-                'id_employee' => $employee->id,
-                'username_employee' => $employee->username,
-                'roleId_employee' => $employee->role_id,
-                'expires_at' => $expiresAt,
-            ]);
-        }
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $validator->errors()
+        ], 400);
     }
+
+    // check credentials
+    $employee = Employees::where('username', $credentials['username'])->first();
+    if(!$employee || !Hash::check($credentials['password'], $employee->password)){
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Invalid credentials',
+        ], 401);
+    }
+
+    // Get the current access token
+    $token = $employee->createToken('authToken')->plainTextToken;
+
+    return response()->json([
+        'status' => 'login success',
+        'token' => $token,
+        'id_employee' => $employee->id,
+        'username_employee' => $employee->username,
+        'roleId_employee' => $employee->role_id,
+        // You can set custom expiration time here if needed
+        'expires_at' => null, // Since Sanctum uses its own way to handle expiration
+    ]);
+}
 
     public function getAccessToken($tokenId) {
         $accessToken = AccessToken::find($tokenId);
