@@ -20,7 +20,7 @@ class EmployeeSubtasksController extends Controller
             ->select('mg_employee_subtask.*', 'mg_tasks.*',)
             ->get();
 
-        if ($employeeTask->isEmpty()) {
+        if ($employeeSubTask->isEmpty()) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'No employee tasks found.'
