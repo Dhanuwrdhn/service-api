@@ -34,6 +34,16 @@ class TasksController extends Controller
         ]);
     }
 
+    public function showTaskSpecific($taskid)
+    {
+        $tasks = Task::where('id', $taskid)->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $tasks
+        ]);
+    }
+
 
     //Create Tasks
     public function createTask(Request $request)
