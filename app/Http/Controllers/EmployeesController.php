@@ -333,8 +333,9 @@ class EmployeesController extends Controller
     
     
             // Ensure the new password meets the specified criteria
+            // Ensure the new password meets the specified criteria
             $newPassword = $data['password'];
-            if (!$this->isValidPassword($newPassword)) {
+            if (!preg_match('/^(?=.*[A-Z])(?=.*[!@#$%^&*()-_=+{};:,<.>ยง~]).*$/', $newPassword)) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Password must contain at least 8 characters, one uppercase letter, and one symbol'
@@ -358,6 +359,7 @@ class EmployeesController extends Controller
                 'message' => 'Failed to change password: ' . $e->getMessage()
             ], 500);
         }
+        
 
     }
 }
