@@ -308,4 +308,55 @@ class EmployeesController extends Controller
             ], 200);
         }
     }
+
+    //change password
+    public function changePassword(Request $request, $id) {
+        $rules = [
+            'password' => [
+                'required',
+                'string',
+                'min:8', // Minimal 8 karakter
+                'regex:/^(?=.*[A-Z])(?=.*[!@#$%^&*()-_=+{};:,<.>ยง~]).*$/', // Minimal satu huruf kapital dan satu simbol
+            ],
+        ];
+
+        $data = $request->all();
+
+        $validator = Validator::make($data, $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $validator->errors()
+            ], 400);
+        }
+
+        $employee = Employees::find($id);
+
+        if (!$employee) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'employee not found'
+            ], 404);
+        }
+
+
+        // Memastikan password baru sesuai dengan aturan yang ditentukan
+        $newPassword = $data['password'];
+        if (!preg_match('/^(?=.*[A-Z])(?=.*[!@#$%^&*()-_=+{};:,<.>ยง~]).*$/', $newPassword)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Password must contain at least 8 characters, one uppercase letter, and one symbol'
+            ], 400);
+        }
+
+        // Jika semua validasi berhasil, lanjutkan dengan mengubah password dan menyimpan data employee
+        $employee->password = Hash::make($newPassword);
+        $employee->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Password berhasil diubah'
+        ], 200);
+    }
 }
