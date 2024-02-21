@@ -140,17 +140,17 @@ class EmployeesController extends Controller
     }
     public function update(Request $request, $id){
         $rules = [
-            'role_id' => 'required|integer',
-            'jobs_id' => 'required|integer',
-            'team_id' => 'required|integer',
-            'employee_name' => 'required|string',
+            'role_id' => 'sometimes|integer',
+            'jobs_id' => 'sometimes|integer',
+            'team_id' => 'sometimes|integer',
+            'employee_name' => 'sometimes|string',
             'date_of_birth' => 'date',
             'age' => 'string',
             'mobile_number' => 'string',
-            'email' => 'required|email|unique:mg_employee,email',
-            'username' => 'required|string',
+            'email' => 'sometimes|email|unique:mg_employee,email',
+            'username' => 'sometimes|string',
             'password' => [
-                'required',
+                'sometimes',
                 'string',
                 'min:8', // Minimal 8 karakter
                 'regex:/^(?=.*[A-Z])(?=.*[!@#$%^&*()-_=+{};:,<.>ยง~]).*$/', // Minimal satu huruf kapital dan satu simbol
