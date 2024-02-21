@@ -27,6 +27,7 @@ return new class extends Migration
              $table->foreign('role_id')->references('id')->on('mg_roles')->onDelete('cascade');
             $table->foreign('jobs_id')->references('id')->on('mg_jobs')->onDelete('cascade');
             $table->foreign('team_id')->references('id')->on('mg_teams')->onDelete('cascade');
+            $table->foreign('project_id')->references('id')->on('mg_projects')->onDelete('cascade');
         });
     }
 

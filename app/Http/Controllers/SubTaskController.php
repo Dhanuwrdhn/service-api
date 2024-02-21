@@ -531,4 +531,20 @@ class SubTaskController extends Controller
             ], 500);
         }
     }
+    public function destroy($id)
+    {
+        $subtask = SubTasks::find($id);
+
+        if (!$subtask) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'subtask not found'
+            ], 404);
+        }
+        $subtask->delete();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'subtask deleted'
+        ], 200);
+    }
 }

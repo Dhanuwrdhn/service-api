@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Docs;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class DocsController extends Controller
 {
@@ -21,9 +23,13 @@ class DocsController extends Controller
 
         $documentFile = $request->file('document_file');
         $documentFileName = time() . '_' . $documentFile->getClientOriginalName();
+        // Simpan file di dalam direktori 'public/documents'
         $documentFile->storeAs('public/documents', $documentFileName);
 
-        $document = Document::create([
+        // Path file yang disimpan
+        $documentFilePath = 'documents/' . $documentFileName;
+
+        $document = Docs::create([
             'team_id' => $request->team_id,
             'role_id' => $request->role_id,
             'jobs_id' => $request->jobs_id,

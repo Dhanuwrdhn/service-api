@@ -12,3 +12,4 @@ Route::put('accept-subtask/{id}', [\App\Http\Controllers\SubTaskController::clas
 Route::put('reject-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'rejectSubTask']);
 Route::put('review-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'reviewSubTask']);
 Route::put('submit-subtask/{id}',[\App\Http\Controllers\SubTaskController::class, 'submitSubtask']);
+Route::delete('delete-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'destroy']);  

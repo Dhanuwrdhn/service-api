@@ -16,6 +16,8 @@ require __DIR__.'/api/project.routes.php';
 require __DIR__.'/api/employee.routes.php';
 // API ATTENDANCE
 require __DIR__.'/api/attendance.routes.php';
+// API DOCUMENTS
+require __DIR__.'/api/documents.routes.php';
 // API TASKS
 require __DIR__.'/api/task.routes.php';
 // API SUBTASKS

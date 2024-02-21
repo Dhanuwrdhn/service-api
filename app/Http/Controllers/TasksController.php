@@ -195,14 +195,12 @@ class TasksController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'task not found'
-            ]);
+            ], 404);
         }
-
         $task->delete();
-
         return response()->json([
             'status' => 'success',
             'message' => 'task deleted'
-        ]);
+        ], 200);
     }
 }
