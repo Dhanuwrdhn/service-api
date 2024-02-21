@@ -75,30 +75,31 @@ class AttendanceController extends Controller
         if (!$employee) {
             return response()->json(['message' => 'Employee not found'], 404);
         }
-
-        // Check if already checkout
-        $attendance = Attendance::where('employee_id', $employee_id)
-            ->whereDate('checkout', (new \DateTime())->setTime(0, 0))
-            ->first();
-
-        if ($attendance) {
-            return response()->json(['message' => 'Employee has already checked out today'], 400);
-        }
-
         // Check if already checkin
-        $today = (new \DateTime())->setTime(0, 0);
+        $today = (new \DateTime())->format('Y-m-d');
         $attendance = Attendance::where('employee_id', $employee_id)
-            ->whereDate('checkin', $today)
-            ->first();
+        ->whereDate('checkin', $today)
+        ->first();
 
         if (!$attendance) {
             return response()->json(['message' => 'Employee did not check in today'], 400);
         }
 
+
+        // Periksa apakah sudah ada catatan checkout untuk karyawan pada hari ini
+        $checkoutattendance = Attendance::where('employee_id', $employee_id)
+        ->whereDate('checkout', $today)
+        ->first();
+
+
+        if ($checkoutattendance) {
+            return response()->json(['message' => 'Employee has already checked out today', "fsts"=>$attendance], 400);
+        }
         // Update the checkout to current time
         $checkoutTime = new \DateTime();
-        $updatedAttendance = Attendance::where('employee_id', $employee_id)->update(['checkout' => $checkoutTime]);
-
+        $updatedAttendance = Attendance::where('employee_id', $employee_id)
+                                        ->whereDate('checkin',$today) // Bandingkan jam dan menit saja
+                                        ->update(['checkout' => $checkoutTime]);
         // Hitung waktu antara check-in dan check-out
         $checkinTime = new \DateTime($attendance->checkin);
         $duration = $checkoutTime->diff($checkinTime)->format('%H:%I:%S');
@@ -230,7 +231,7 @@ public function getCheckOut($employee_id)
             'message' => 'Failed to get check-out time: ' . $e->getMessage()
         ], 500);
     }
-}   
+}
 
 }
 
