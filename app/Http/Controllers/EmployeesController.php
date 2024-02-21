@@ -144,7 +144,7 @@ class EmployeesController extends Controller
             'jobs_id' => 'sometimes|integer',
             'team_id' => 'sometimes|integer',
             'employee_name' => 'sometimes|string',
-            'date_of_birth' => 'date',
+            'date_of_birth' => 'sometimes|date',
             'age' => 'string',
             'mobile_number' => 'string',
             'email' => 'sometimes|email|unique:mg_employee,email',
@@ -188,15 +188,18 @@ class EmployeesController extends Controller
             ], 400);
         }
 
+        // Jika ada password yang diberikan, hash password tersebut
+        $data['password'] = Hash::make($password);
+
+
         // Jika semua validasi berhasil, lanjutkan dengan mengubah password dan menyimpan data employee
-        $employee->password = Hash::make($password);
         $employee->fill($data);
         $employee->save();
 
         return response()->json([
             'status' => 'success',
             'data' => $employee
-        ]);
+        ], 200);
     }
 
     //delete
@@ -208,7 +211,7 @@ class EmployeesController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'employee not found'
-            ]);
+            ], 404);
         }
 
         $employee->delete();
@@ -216,7 +219,7 @@ class EmployeesController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'employee deleted'
-        ]);
+        ], 200);
     }
     public function login(Request $request) {
     $credentials = $request->only('username', 'password');
@@ -257,14 +260,17 @@ class EmployeesController extends Controller
         'roleId_employee' => $employee->role_id,
         // You can set custom expiration time here if needed
         'expires_at' => now()->addDay()->toDateTimeString(), // 24 hours from now
-    ]);
+    ], 200);
 }
 
     public function getAccessToken($tokenId) {
         $accessToken = AccessToken::find($tokenId);
 
         if (!$accessToken) {
-            return response()->json(['message' => 'Access token not found'], 404);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Access token not found'
+            ], 404);
         }
 
         // Menghitung waktu kedaluwarsa token
@@ -272,66 +278,34 @@ class EmployeesController extends Controller
         $expiresIn = $expiresAt->diffForHumans();
 
         return response()->json([
+            'status' => 'success',
             'access_token' => [
                 'token' => $accessToken->token,
             'expires_at' => $expiresIn,
         // tambahkan informasi lain yang diperlukan
             ]
-        ]);
+        ],200);
     }
+        public function logOut($id){
+            // Temukan pengguna berdasarkan ID
+            $user = Employees::find($id);
 
-    //    public function refreshToken(Request $request)
-// {
-//     $employee = $request->user();
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'employee not found'
+                ], 404);
+            }
+            if ($user) {
+            // Revoke semua token yang terkait dengan pengguna
+            $user->tokens()->delete();
+            // Atau, jika Anda ingin hanya menonaktifkan token akses di database (tanpa menghapusnya dari penyedia token)
+            // $user->tokens->each->delete();
 
-//     if (!$employee) {
-//         return response()->json([
-//             'status' => 'error',
-//             'message' => 'Unauthorized',
-//         ], 401);
-//     }
-
-//     // Hapus semua token pengguna
-//     $employee->tokens()->delete();
-
-//     // Buat token baru
-//     $token = $employee->createToken('authToken')->plainTextToken;
-//     // Simpan token baru di database bersama dengan informasi pengguna yang sesuai
-//     $employee->update(['access_token' => $token]);
-
-//     return response()->json([
-//         'status' => 'success',
-//         'token' => $token,
-//         'message' => 'Token refreshed successfully.',
-//     ]);
-// }
-
-    public function logOut($id){
-        // Temukan pengguna berdasarkan ID
-        $user = Employees::find($id);
-
-        if (!$user) {
             return response()->json([
-                'status' => 'error',
-                'message' => 'employee not found'
-            ]);
+                'status' => 'success',
+                'message' => 'Logout berhasil'
+            ], 200);
         }
-        if ($user) {
-        // Revoke semua token yang terkait dengan pengguna
-        $user->tokens()->delete();
-        // Atau, jika Anda ingin hanya menonaktifkan token akses di database (tanpa menghapusnya dari penyedia token)
-        // $user->tokens->each->delete();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Logout berhasil'
-        ]);
-    } else {
-        // Jika pengguna tidak ditemukan
-        return response()->json([
-            'status' => 'error',
-            'message' => 'User tidak ditemukan'
-        ], 404);
-    }
     }
 }
