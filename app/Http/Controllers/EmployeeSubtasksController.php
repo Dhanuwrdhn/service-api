@@ -23,7 +23,7 @@ class EmployeeSubtasksController extends Controller
         if ($employeeSubTask->isEmpty()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'No employee tasks found.'
+                'message' => 'No employee SubTask found.'
             ], 404);
         }
 
@@ -44,7 +44,7 @@ class EmployeeSubtasksController extends Controller
         if ($employeeSubtask->isEmpty()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'No employee projects found for the specified employee ID.'
+                'message' => 'No employee SubTask found for the specified employee ID.'
             ], 404);
         }
 
@@ -58,14 +58,15 @@ class EmployeeSubtasksController extends Controller
 
         $employeeSubtask = EmployeeSubtasks::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_subtask.employee_id')
             ->join('mg_tasks', 'mg_employee_subtask.tasks_id', '=', 'mg_tasks.id')
+            ->join('mg_sub_tasks', 'mg_employee_subtask.subtasks_id', '=', 'mg_sub_tasks.id')
             ->where('mg_employee_subtask.employee_id', $employee_id)
-            ->select('mg_employee_project.*', 'mg_employee.*', 'mg_tasks.*')
+            ->select('mg_employee_subtask.*', 'mg_employee.*', 'mg_tasks.*', 'mg_sub_tasks.*')
             ->get();
 
         if ($employeeSubtask->isEmpty()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'No employee projects found for the specified employee ID.'
+                'message' => 'No employee SubTask found for the specified employee ID.'
             ], 404);
         }
 
