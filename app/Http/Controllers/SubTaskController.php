@@ -114,6 +114,7 @@ class SubTaskController extends Controller
         }
         // Menambahkan jumlah tugas yang dibuat ke dalam proyek
         $task->total_subtask_created += 1;
+        $task->task_status = 'workingOnit';
         $task->save();
 
         // Commit transaksi database
