@@ -167,17 +167,23 @@ class TasksController extends Controller
 
     $data = $request->only('task_status');
 
+    DB::beginTransaction();
+
     $task->update($data);
 
     // Check if the task status is Completed, then update mg_projects
     if ($data['task_status'] == 'Completed') {
-        $project = Project::find($task->project_id);
+        $project = Project::find($task->project_id); 
 
         if ($project) {
             $project->increment('total_task_completed');
+            $projectPercentage =  $project->total_task_completed / $project->total_task_created * 100;  
+            $project->percentage = $projectPercentage;
+            $project->save();
         }
     }
 
+    DB::commit();
     return response()->json([
         'status' => 'success',
         'data' => $task
