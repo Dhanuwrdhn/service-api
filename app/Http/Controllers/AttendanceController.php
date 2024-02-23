@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\Employees;
+use Illuminate\Support\Facades\Http;
+
+use Illuminate\Support\Facades\DB;
 
 class AttendanceController extends Controller
 {
@@ -233,5 +236,35 @@ public function getCheckOut($employee_id)
     }
 }
 
+    public function autoCheckOut()
+    {
+        try {
+            DB::beginTransaction();
+
+            $result = Attendance::whereNull('checkout')
+                ->update(['checkout' => now()]);
+
+            $discordWebhookUrl = 'https://discord.com/api/webhooks/1210505645334335521/Ke4lTZFQypZrHLYYwC2Gbwm_Dv4hwC5UunltvrSzzlb8VsXKK3e8ofrWd8hLIMih2gTP';
+
+            Http::post($discordWebhookUrl, [
+                'content' => ' @474968068490264577 p' . now(),
+            ]);
+
+                
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Auto checkout successful for ' . $result . ' employees'
+            ], 200);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to auto checkout: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
 

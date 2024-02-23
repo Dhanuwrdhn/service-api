@@ -12,3 +12,5 @@ Route::get('attendance/{id}', [\App\Http\Controllers\AttendanceController::class
 
 Route::get('checkin/{employee_id}',[\App\Http\Controllers\AttendanceController::class, 'getCheckIn']);
 Route::get('checkout/{employee_id}',[\App\Http\Controllers\AttendanceController::class, 'getCheckOut']);
+
+Route::put('autocheckoutfunction', [\App\Http\Controllers\AttendanceController::class, 'autoCheckOut']);
