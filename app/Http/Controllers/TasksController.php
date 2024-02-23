@@ -190,21 +190,46 @@ class TasksController extends Controller
     ], 200);
 }
 
-    //Delete Tasks
-     public function destroy($id)
+        //Delete Tasks
+        public function destroy($id)
     {
-        $task = Task::find($id);
+        try {
+            DB::beginTransaction();
 
-        if (!$task) {
+            $task = Task::find($id);
+
+            if (!$task) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Task not found'
+                ], 404);
+            }
+
+            // Dapatkan proyek terkait
+            $project = $task->project;
+
+            // Kurangi nilai total_task_created
+            $project->total_task_created -= 1;
+
+            // Simpan perubahan pada proyek
+            $project->save();
+
+            // Hapus tugas
+            $task->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Task deleted and total_task_created decremented'
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
             return response()->json([
                 'status' => 'error',
-                'message' => 'task not found'
-            ], 404);
+                'message' => 'Failed to delete task: ' . $e->getMessage()
+            ], 500);
         }
-        $task->delete();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'task deleted'
-        ], 200);
     }
 }

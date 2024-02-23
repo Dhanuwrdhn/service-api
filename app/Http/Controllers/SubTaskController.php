@@ -111,7 +111,7 @@ class SubTaskController extends Controller
             throw new \Exception('task or assignBy not found.');
         }
 
-        
+
 
         // Mengassign tugas kepada karyawan
         $assignedToIds = $request->input('assign_to');
@@ -513,7 +513,7 @@ class SubTaskController extends Controller
             if ($subtask->subtask_image != null){
                 $validatedData['subtask_status'] = 'Completed';
                 $subtask->update($validatedData);
-                
+
                 //update Task informations
                 $updateTask = Task::find($subtask->task_id);
                 $totalPercentageOfCompletedTask =  SubTasks::where('task_id', $updateTask->id)
@@ -522,7 +522,7 @@ class SubTaskController extends Controller
                 $updateTask->percentage_task = $totalPercentageOfCompletedTask;
                 $updateTask->total_subtask_completed += 1;
                 $updateTask->save();
-                
+
 
 
             } else if ($subtask->subtask_image === null || $subtask->subtask_image === 0){
@@ -531,7 +531,7 @@ class SubTaskController extends Controller
                 $subtask->update($validatedData);
             }
 
-            
+
 
 
             DB::commit();
@@ -548,20 +548,45 @@ class SubTaskController extends Controller
             ], 500);
         }
     }
-    public function destroy($id)
+        public function destroy($id)
     {
-        $subtask = SubTasks::find($id);
+        try {
+            DB::beginTransaction();
 
-        if (!$subtask) {
+            $subtask = SubTasks::find($id);
+
+            if (!$subtask) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Subtask not found'
+                ], 404);
+            }
+
+            // Dapatkan entri subtask terkait
+            $project = $subtask->project;
+
+            // Kurangi nilai total_subtask_created
+            $project->total_subtask_created -= 1;
+
+            // Simpan perubahan pada proyek
+            $project->save();
+
+            // Hapus subtask
+            $subtask->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Subtask deleted and total_subtask_created decremented'
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
             return response()->json([
                 'status' => 'error',
-                'message' => 'subtask not found'
-            ], 404);
+                'message' => 'Failed to delete subtask: ' . $e->getMessage()
+            ], 500);
         }
-        $subtask->delete();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'subtask deleted'
-        ], 200);
     }
 }
