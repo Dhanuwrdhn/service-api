@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel
             ]);
             // Log the task execution (optional)
             \Log::info('Auto Checkout API call task executed at ' . now());
-        })->hourlyAt('17:35');
+        })->everyMinute();
 
     }
 
