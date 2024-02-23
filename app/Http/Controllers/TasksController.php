@@ -204,10 +204,6 @@ class TasksController extends Controller
                     'message' => 'Task not found'
                 ], 404);
             }
-
-            // Dapatkan proyek terkait
-            $project = $task->project;
-
             // Kurangi nilai total_task_created
             $project->total_task_created -= 1;
 
