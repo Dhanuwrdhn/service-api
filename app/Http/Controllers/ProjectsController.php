@@ -46,6 +46,7 @@ class ProjectsController extends Controller
 
     $rules = [
         'project_name' => 'required|string',
+        'project_desc' => 'string',
         'team_id' => 'required|exists:mg_teams,id',
         'role_id' => 'required|exists:mg_roles,id',
         'jobs_id' => 'required|exists:mg_jobs,id',
@@ -124,6 +125,7 @@ class ProjectsController extends Controller
 {
     $rules = [
         'project_name' => 'required|string',
+        'project_desc' => 'string',
         'team_id' => 'required|exists:mg_teams,id',
         'role_id' => 'required|exists:mg_roles,id',
         'jobs_id' => 'required|exists:mg_jobs,id',

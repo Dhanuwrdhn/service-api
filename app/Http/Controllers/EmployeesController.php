@@ -138,23 +138,14 @@ class EmployeesController extends Controller
             ], 500);
         }
     }
-    public function update(Request $request, $id){
+        public function updateEmployee(Request $request, $id){
         $rules = [
-            'role_id' => 'sometimes|integer',
-            'jobs_id' => 'sometimes|integer',
-            'team_id' => 'sometimes|integer',
             'employee_name' => 'sometimes|string',
             'date_of_birth' => 'sometimes|date',
             'age' => 'string',
             'mobile_number' => 'string',
             'email' => 'sometimes|email|unique:mg_employee,email',
             'username' => 'sometimes|string',
-            'password' => [
-                'sometimes',
-                'string',
-                'min:8', // Minimal 8 karakter
-                'regex:/^(?=.*[A-Z])(?=.*[!@#$%^&*()-_=+{};:,<.>ยง~]).*$/', // Minimal satu huruf kapital dan satu simbol
-            ],
             'gender' => 'in:male,female',
             'religion' => 'string',
             'npwp_number' => 'string',
@@ -179,27 +170,26 @@ class EmployeesController extends Controller
             ], 404);
         }
 
-        // Memastikan password sesuai dengan aturan yang ditentukan
-        $password = $request->input('password');
-        if (!preg_match('/^(?=.*[A-Z])(?=.*[!@#$%^&*()-_=+{};:,<.>ยง~]).*$/', $password)) {
+        try {
+            DB::beginTransaction();
+
+            // Update data employee
+            $employee->fill($data);
+            $employee->save();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $employee
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'status' => 'error',
-                'message' => 'Password must contain at least 8 characters, one uppercase letter, and one symbol'
-            ], 400);
+                'message' => 'Failed to update employee data: ' . $e->getMessage()
+            ], 500);
         }
-
-        // Jika ada password yang diberikan, hash password tersebut
-        $data['password'] = Hash::make($password);
-
-
-        // Jika semua validasi berhasil, lanjutkan dengan mengubah password dan menyimpan data employee
-        $employee->fill($data);
-        $employee->save();
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $employee
-        ], 200);
     }
 
     //delete
@@ -320,18 +310,18 @@ class EmployeesController extends Controller
                     'regex:/^(?=.*[A-Z])(?=.*[!@#$%^&*()-_=+{};:,<.>ยง~]).*$/',
                 ],
             ]);
-    
+
             $employee = Employees::find($id);
-    
+
             if (!$employee) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Employee not found'
                 ], 404);
             }
-        
-    
-    
+
+
+
             // Ensure the new password meets the specified criteria
             // Ensure the new password meets the specified criteria
             $newPassword = $data['password'];
@@ -341,17 +331,17 @@ class EmployeesController extends Controller
                     'message' => 'Password must contain at least 8 characters, one uppercase letter, and one symbol'
                 ], 400);
             }
-    
-    
+
+
             // Jika semua validasi berhasil, lanjutkan dengan mengubah password dan menyimpan data employee
             $employee->password = Hash::make($newPassword);
             $employee->save();
-    
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Password berhasil diubah'
             ], 200);
-        
+
 
         }catch (\Exception $e) {
             return response()->json([
@@ -359,7 +349,7 @@ class EmployeesController extends Controller
                 'message' => 'Failed to change password: ' . $e->getMessage()
             ], 500);
         }
-        
+
 
     }
 }
