@@ -549,7 +549,7 @@ class SubTaskController extends Controller
         }
     }
         public function destroy($id)
-    {
+        {
         try {
             DB::beginTransaction();
 
@@ -562,14 +562,21 @@ class SubTaskController extends Controller
                 ], 404);
             }
 
-            // Dapatkan entri subtask terkait
-            $project = $subtask->project;
+            // Dapatkan task terkait dengan subtask
+            $task = Task::find($subtask->task_id);
 
-            // Kurangi nilai total_subtask_created
-            $project->total_subtask_created -= 1;
+            if (!$task) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Task not found for the subtask'
+                ], 404);
+            }
 
-            // Simpan perubahan pada proyek
-            $project->save();
+            // Kurangi nilai total_subtasks_created pada model Task
+            $task->total_subtasks_created -= 1;
+
+            // Simpan perubahan pada model Task
+            $task->save();
 
             // Hapus subtask
             $subtask->delete();
@@ -578,7 +585,7 @@ class SubTaskController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Subtask deleted and total_subtask_created decremented'
+                'message' => 'Subtask deleted and total_subtasks_created decremented'
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
