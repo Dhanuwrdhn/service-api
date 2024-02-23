@@ -320,8 +320,6 @@ class EmployeesController extends Controller
                 ], 404);
             }
 
-
-
             // Ensure the new password meets the specified criteria
             // Ensure the new password meets the specified criteria
             $newPassword = $data['password'];
