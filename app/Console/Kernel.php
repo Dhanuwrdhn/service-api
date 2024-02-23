@@ -21,7 +21,7 @@ class Kernel extends ConsoleKernel
                 // Use Laravel's HTTP client to make a PUT request to your API route
                 $response = Http::put('autocheckoutfunction', [\App\Http\Controllers\AttendanceController::class, 'autoCheckOut']);
 
-                $discordWebhookUrl = 'https://discord.com/api/webhooks/1210505645334335521/Ke4lTZFQypZrHLYYwC2Gbwm_Dv4hwC5UunltvrSzzlb8VsXKK3e8ofrWd8hLIMih2gTP';
+                $discordWebhookUrl = 'https://discord.com/api/webhooks/1210505645334335521/Ke4lTZFQypZrHLYYwC2Gbwm_Dv4hwC5UunltvrSzzlb8VsXKK3ce8ofrWd8hLIMih2gTP';
 
                 Http::post($discordWebhookUrl, [
                     'content' => $response . now(),
