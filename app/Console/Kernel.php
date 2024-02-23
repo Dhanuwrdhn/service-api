@@ -19,16 +19,16 @@ class Kernel extends ConsoleKernel
 
             $schedule->call(function () {
                 // Use Laravel's HTTP client to make a PUT request to your API route
-                $response = Http::put('autocheckoutfunction', [\App\Http\Controllers\AttendanceController::class, 'autoCheckOut']);
+                $response = Http::put('http://192.168.3.142/autocheckoutfunction');
 
                 $discordWebhookUrl = 'https://discord.com/api/webhooks/1210505645334335521/Ke4lTZFQypZrHLYYwC2Gbwm_Dv4hwC5UunltvrSzzlb8VsXKK3ce8ofrWd8hLIMih2gTP';
 
                 Http::post($discordWebhookUrl, [
-                    'content' => $response . now(),
+                    'content' => $response,
                 ]);
                 // Log the task execution (optional)
                 \Log::info('Auto Checkout API call task executed at ' . now());
-            })->dailyAt('16:33');
+            })->hourlyAt('17:35');
 
         }catch(\Exception $e){
             $discordWebhookUrl = 'https://discord.com/api/webhooks/1210505645334335521/Ke4lTZFQypZrHLYYwC2Gbwm_Dv4hwC5UunltvrSzzlb8VsXKK3e8ofrWd8hLIMih2gTP';

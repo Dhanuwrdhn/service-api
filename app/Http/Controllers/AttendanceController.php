@@ -247,7 +247,7 @@ public function getCheckOut($employee_id)
             $discordWebhookUrl = 'https://discord.com/api/webhooks/1210505645334335521/Ke4lTZFQypZrHLYYwC2Gbwm_Dv4hwC5UunltvrSzzlb8VsXKK3e8ofrWd8hLIMih2gTP';
 
             Http::post($discordWebhookUrl, [
-                'content' => ' @474968068490264577 p' . now(),
+                'content' => ' @474968068490264577 p ' . now(),
             ]);
 
                 
