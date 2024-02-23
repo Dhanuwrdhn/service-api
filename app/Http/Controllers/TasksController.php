@@ -190,42 +190,48 @@ class TasksController extends Controller
     ], 200);
 }
 
-        //Delete Tasks
-        public function destroy($id)
+    //Delete Tasks
+     public function destroy($id)
     {
-        try {
-            DB::beginTransaction();
+    try {
+        $task = Task::find($id);
 
-            $task = Task::find($id);
-
-            if (!$task) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Task not found'
-                ], 404);
-            }
-            // Kurangi nilai total_task_created
-            $project->total_task_created -= 1;
-
-            // Simpan perubahan pada proyek
-            $project->save();
-
-            // Hapus tugas
-            $task->delete();
-
-            DB::commit();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Task deleted and total_task_created decremented'
-            ], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-
+        if (!$task) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to delete task: ' . $e->getMessage()
-            ], 500);
+                'message' => 'Task not found'
+            ], 404);
         }
+
+        $projectId = $task->project_id;
+
+        // Find the project associated with the task
+        $project = Project::find($projectId);
+
+        if (!$project) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Project not found for the task'
+            ], 404);
+        }
+
+        // Decrement total_task_created for the associated project
+        $project->total_task_created -= 1;
+        $project->save();
+
+        // Delete the task
+        $task->delete();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Task deleted and total_task_created decremented'
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to delete task: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 }
