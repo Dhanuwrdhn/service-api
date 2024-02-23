@@ -573,7 +573,7 @@ class SubTaskController extends Controller
             }
 
             // Kurangi nilai total_subtasks_created pada model Task
-            $task->total_subtasks_created -= 1;
+            $task->total_subtask_created -= 1;
 
             // Simpan perubahan pada model Task
             $task->save();
