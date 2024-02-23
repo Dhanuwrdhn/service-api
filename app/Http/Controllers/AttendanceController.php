@@ -250,13 +250,13 @@ public function getCheckOut($employee_id)
                 'content' => ' @474968068490264577 p ' . now(),
             ]);
 
+            DB::commit();
                 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Auto checkout successful for ' . $result . ' employees'
             ], 200);
 
-            DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
 

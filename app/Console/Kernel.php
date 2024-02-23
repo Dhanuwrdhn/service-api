@@ -5,6 +5,7 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\AttendanceController;
 
 class Kernel extends ConsoleKernel
 {
@@ -18,16 +19,16 @@ class Kernel extends ConsoleKernel
 
         $schedule->call(function () {
             // Use Laravel's HTTP client to make a PUT request to your API route
-            $response = Http::put('http://192.168.3.142/api/autocheckoutfunction');
+            $response = app(AttendanceController::class)->autoCheckOut(request());
 
-            $discordWebhookUrl = 'https://discord.com/api/webhooks/1210505645334335521/Ke4lTZFQypZrHLYYwC2Gbwm_Dv4hwC5UunltvrSzzlb8VsXKK3ce8ofrWd8hLIMih2gTP';
+            $discordWebhookUrl = 'https://discord.com/api/webhooks/1210505645334335521/Ke4lTZFQypZrHLYYwC2Gbwm_Dv4hwC5UunltvrSzzlb8VsXKK3e8ofrWd8hLIMih2gTP';
 
             Http::post($discordWebhookUrl, [
-                'content' => $response,
+                'content' => 'Auto Checkout function executed at ' . now() . ' and ' . $response['message'],
             ]);
             // Log the task execution (optional)
             \Log::info('Auto Checkout API call task executed at ' . now());
-        })->everyMinute();
+        })->DailyAt('18:00');
 
     }
 
