@@ -246,17 +246,22 @@ public function getCheckOut($employee_id)
 
             $discordWebhookUrl = 'https://discord.com/api/webhooks/1210505645334335521/Ke4lTZFQypZrHLYYwC2Gbwm_Dv4hwC5UunltvrSzzlb8VsXKK3e8ofrWd8hLIMih2gTP';
 
+            if(!$result){
+                Http::post($discordWebhookUrl, [
+                    'content' => 'All employees are diligent and have checked out on time',
+                ]);
+            }
             Http::post($discordWebhookUrl, [
-                'content' => ' @474968068490264577 p' . now(),
+                'content' => 'Auto checkout successful for ' . $result . ' employees',
             ]);
 
+            DB::commit();
                 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Auto checkout successful for ' . $result . ' employees'
             ], 200);
 
-            DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
 
