@@ -43,7 +43,7 @@ class EmployeeSubtasksController extends Controller
 
         $employeeSubtask = EmployeeSubTasks::with(['employee', 'projects', 'Subtasks'])
                 ->where('subtasks_id', $subtask_id)
-                ->get(['employee_id']);
+                ->get();
 
         if ($employeeSubtask->isEmpty()) {
             return response()->json([
@@ -54,7 +54,7 @@ class EmployeeSubtasksController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'employeeProjects' => $employeeSubtask->pluck('employee_id')
+            'employeeProjects' => $employeeSubtask
         ]);
     }
     // show employee subtasks by id
@@ -69,7 +69,7 @@ class EmployeeSubtasksController extends Controller
 
         $employeeSubtask = EmployeeSubTasks::with('employee', 'projects', 'Subtasks')
             ->where('employee_id', $employee_id)
-            ->get(['subtasks_id']);
+            ->get();
 
         if ($employeeSubtask->isEmpty()) {
             return response()->json([
@@ -80,7 +80,7 @@ class EmployeeSubtasksController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'employeeSubTask' => $employeeSubtask->pluck('subtasks_id')
+            'employeeSubTask' => $employeeSubtask
         ]);
     }
 }

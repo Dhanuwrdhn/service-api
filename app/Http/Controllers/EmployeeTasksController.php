@@ -35,15 +35,15 @@ class EmployeeTasksController extends Controller
     }
         public function showEmployeeByIdTask($tasks_id){
             // $employeeTasks = EmployeeTasks::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_tasks.employee_id')
-                // ->join('mg_projects', 'mg_employee_tasks.project_id', '=', 'mg_projects.id')
-                // ->join('mg_tasks', 'mg_tasks.id', '=', 'mg_employee_tasks.tasks_id')
-                // ->where('mg_employee_tasks.tasks_id', $tasks_id)
-                // ->select('mg_employee_tasks.*', 'mg_employee.*', 'mg_projects.*', 'mg_tasks.*' )
-                // ->get();
+            //     ->join('mg_projects', 'mg_employee_tasks.project_id', '=', 'mg_projects.id')
+            //     ->join('mg_tasks', 'mg_tasks.id', '=', 'mg_employee_tasks.tasks_id')
+            //     ->where('mg_employee_tasks.tasks_id', $tasks_id)
+            //     ->select('mg_employee_tasks.*', 'mg_employee.*', 'mg_projects.*', 'mg_tasks.*' )
+            //     ->get();
 
             $employeeTasks = EmployeeTasks::with(['employee', 'projects', 'tasks'])
                 ->where('tasks_id', $tasks_id)
-                ->get(['employee_id']);
+                ->get();
 
             if ($employeeTasks->isEmpty()) {
                 return response()->json([
@@ -54,7 +54,7 @@ class EmployeeTasksController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'employeeTasks' => $employeeTasks->pluck('employee_id')
+                'employeeTasks' => $employeeTasks
             ]);
     }
     public function showTotalTaskByIdEmployee($employee_id){
@@ -67,7 +67,7 @@ class EmployeeTasksController extends Controller
 
         $employeeTasks = EmployeeTasks::with('employee', 'projects', 'tasks')
             ->where('employee_id', $employee_id)
-            ->get(['tasks_id']);
+            ->get();
 
 
         if ($employeeTasks->isEmpty()) {
@@ -79,7 +79,7 @@ class EmployeeTasksController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'employeeTasks' => $employeeTasks->pluck('tasks_id')
+            'employeeTasks' => $employeeTasks
         ]);
     }
 
