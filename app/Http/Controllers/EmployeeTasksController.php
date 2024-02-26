@@ -33,54 +33,45 @@ class EmployeeTasksController extends Controller
             'employeeProjects' => $employeeTask
         ]);
     }
-        public function showEmployeeByIdTask($tasks_id){
-            // $employeeTasks = EmployeeTasks::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_tasks.employee_id')
-                // ->join('mg_projects', 'mg_employee_tasks.project_id', '=', 'mg_projects.id')
-                // ->join('mg_tasks', 'mg_tasks.id', '=', 'mg_employee_tasks.tasks_id')
-                // ->where('mg_employee_tasks.tasks_id', $tasks_id)
-                // ->select('mg_employee_tasks.*', 'mg_employee.*', 'mg_projects.*', 'mg_tasks.*' )
-                // ->get();
-
-            $employeeTasks = EmployeeTasks::with(['employee', 'projects', 'tasks'])
-                ->where('tasks_id', $tasks_id)
-                ->get(['employee_id']);
+        public function showTotalTaskByIdTask($tasks_id){
+            $employeeTasks = EmployeeTasks::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_tasks.employee_id')
+                ->join('mg_projects', 'mg_employee_tasks.project_id', '=', 'mg_projects.id')
+                ->join('mg_tasks', 'mg_tasks.id', '=', 'mg_employee_tasks.tasks_id')
+                ->where('mg_employee_tasks.tasks_id', $tasks_id)
+                ->select('mg_employee_tasks.*', 'mg_employee.*', 'mg_projects.*', 'mg_tasks.*' )
+                ->get();
 
             if ($employeeTasks->isEmpty()) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'No employee found for the specified task ID.'
+                    'message' => 'No employee task found for the specified employee ID.'
                 ], 404);
         }
 
             return response()->json([
                 'status' => 'success',
-                'employeeTasks' => $employeeTasks->pluck('employee_id')
+                'employeeTasks' => $employeeTasks
             ]);
     }
-    public function showTotalTaskByIdEmployee($employee_id){
-        // $employeeTasks = EmployeeTasks::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_tasks.employee_id')
-        //     ->join('mg_projects', 'mg_employee_tasks.project_id', '=', 'mg_projects.id')
-        //     ->join('mg_tasks', 'mg_tasks.id', '=', 'mg_employee_tasks.tasks_id')
-        //     ->where('mg_employee_tasks.employee_id', $employee_id)
-        //     ->select('mg_employee_tasks.*', 'mg_employee.*', 'mg_projects.*', 'mg_tasks.*' )
-        //     ->get();
+        public function showTotalTaskByIdEmployee($employee_id){
+            $employeeTasks = EmployeeTasks::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_tasks.employee_id')
+                ->join('mg_projects', 'mg_employee_tasks.project_id', '=', 'mg_projects.id')
+                ->join('mg_tasks', 'mg_tasks.id', '=', 'mg_employee_tasks.tasks_id')
+                ->where('mg_employee_tasks.employee_id', $employee_id)
+                ->select('mg_employee_tasks.*', 'mg_employee.*', 'mg_projects.*', 'mg_tasks.*' )
+                ->get();
 
-        $employeeTasks = EmployeeTasks::with('employee', 'projects', 'tasks')
-            ->where('employee_id', $employee_id)
-            ->get(['tasks_id']);
+            if ($employeeTasks->isEmpty()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'No employee task found for the specified employee ID.'
+                ], 404);
+        }
 
-
-        if ($employeeTasks->isEmpty()) {
             return response()->json([
-                'status' => 'error',
-                'message' => 'No task found for the specified employee ID.'
-            ], 404);
-    }
-
-        return response()->json([
-            'status' => 'success',
-            'employeeTasks' => $employeeTasks->pluck('tasks_id')
-        ]);
+                'status' => 'success',
+                'employeeTasks' => $employeeTasks
+            ]);
     }
 
 }
