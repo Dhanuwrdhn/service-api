@@ -1,9 +1,9 @@
 apps:
-  - name: $APP_NAME
-    script: $Artisan_LOCATION
+  - name: ${APP_NAME}
+    script: ${Artisan_LOCATION}
     interpreter: php
     args:
       - serve
-      - --host=$APP_URL
+      - --host=${APP_URL}
     exec_mode: fork
     instances: 1
