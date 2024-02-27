@@ -15,6 +15,14 @@ use Illuminate\Support\Facades\DB;
 
 class SubTaskController extends Controller
 {
+    // show alll subtask
+    public function showAllSubTask(){
+        $subtask = SubTasks::all();
+        return response()->json([
+            'status' => 'success',
+            'data' => $subtask
+        ]);
+    }
     public function showSubTask($id){
         $subtask= SubTasks::find($id);
         if(!$subtask){
