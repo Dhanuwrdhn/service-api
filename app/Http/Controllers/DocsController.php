@@ -43,7 +43,7 @@ class DocsController extends Controller
             'documents' => $documents
         ], 200);
     }
-    public function store(Request $request)
+        public function store(Request $request)
     {
         DB::beginTransaction();
 
@@ -67,7 +67,7 @@ class DocsController extends Controller
             // Ubah nama file dengan menambahkan tanggal ke depannya
             $documentFileName = $currentDate . '_' . $documentFile->getClientOriginalName();
 
-            // Simpan file di dalam direktori 'public/documents'
+            // Simpan file di dalam direktori 'public/documents' yang telah dibuatkan tautan simbolis
             $documentFile->storeAs('public/documents', $documentFileName);
 
             // Path file yang disimpan
@@ -81,7 +81,7 @@ class DocsController extends Controller
                 'document_name' => $request->document_name,
                 'document_desc' => $request->document_desc,
                 'creator_id' => $request->creator_id,
-                'document_file' => $documentFileName,
+                'document_file' => $documentFilePath, // Gunakan path file relatif
             ]);
 
             DB::commit();
@@ -101,6 +101,7 @@ class DocsController extends Controller
             ], 500);
         }
     }
+
 
     public function updateDocument(Request $request, $id)
 {
