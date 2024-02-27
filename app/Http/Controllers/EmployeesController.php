@@ -250,7 +250,10 @@ class EmployeesController extends Controller
         'roleId_employee' => $employee->role_id,
         // You can set custom expiration time here if needed
         'expires_at' => now()->addDay()->toDateTimeString(), // 24 hours from now
-    ], 200)->header('Custom-Header', $employee);
+    ], 200)->header('X-ID-Employee', $employee->id)
+    ->header('X-Username-Employee', $employee->username)
+    ->header('X-RoleID-Employee', $employee->role_id)
+    ->header('X-Token', $token);
 }
 
     public function getAccessToken($tokenId) {
