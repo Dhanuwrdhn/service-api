@@ -3,6 +3,8 @@
 
 use Illuminate\Support\Facades\Route;
 
+
+Route::get('subtasks', [\App\Http\Controllers\SubTaskController::class, 'showAllsubTask']);
 Route::post('create-subtasks', [\App\Http\Controllers\SubTaskController::class, 'createSubTasks']);
 Route::put('edit-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'editSubTask']);
 Route::get('show-subtask/{id}', [\App\Http\Controllers\SubTaskController::class, 'showSubTask']);
