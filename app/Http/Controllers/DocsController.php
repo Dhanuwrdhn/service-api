@@ -43,6 +43,35 @@ class DocsController extends Controller
             'documents' => $documents
         ], 200);
     }
+        public function downloadDocument($id)
+    {
+        try {
+            $document = Docs::findOrFail($id);
+
+            // Dapatkan path lengkap dari file
+            $filePath = storage_path('app/public/' . $document->document_file);
+
+            // Periksa apakah file ada
+            if (!Storage::exists('public/' . $document->document_file)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'File not found'
+                ], 404);
+            }
+
+            // Dapatkan nama file asli
+            $originalFileName = basename($filePath);
+
+            // Buat respons untuk mengunduh file
+            return response()->download($filePath, $originalFileName);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to download document',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+}
         public function store(Request $request)
     {
         DB::beginTransaction();
@@ -67,8 +96,8 @@ class DocsController extends Controller
             // Ubah nama file dengan menambahkan tanggal ke depannya
             $documentFileName = $currentDate . '_' . $documentFile->getClientOriginalName();
 
-            // Simpan file di dalam direktori 'public/documents' yang telah dibuatkan tautan simbolis
-            $documentFile->storeAs('public/documents', $documentFileName);
+            // Simpan file di dalam direktori 'public/documents'
+            $documentFile->storeAs('documents', $documentFileName, 'public');
 
             // Path file yang disimpan
             $documentFilePath = 'documents/' . $documentFileName;
@@ -101,6 +130,7 @@ class DocsController extends Controller
             ], 500);
         }
     }
+
 
 
     public function updateDocument(Request $request, $id)
