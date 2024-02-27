@@ -26,18 +26,22 @@ class DocsController extends Controller
         ], 200);
     }
 
-    public function getAll()
+        public function getAll()
     {
         $documents = Docs::all();
+
+        if ($documents->isEmpty()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No documents found'
+            ], 404);
+        }
 
         return response()->json([
             'status' => 'success',
             'documents' => $documents
         ], 200);
     }
-
-     use Illuminate\Support\Facades\DB;
-
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -55,7 +59,13 @@ class DocsController extends Controller
             ]);
 
             $documentFile = $request->file('document_file');
-            $documentFileName = time() . '_' . $documentFile->getClientOriginalName();
+
+            // Ambil tanggal saat ini dan ubah formatnya menjadi tanggal yang sesuai
+            $currentDate = now()->format('d_F_Y'); // Misalnya, 21_February_2024
+
+            // Ubah nama file dengan menambahkan tanggal ke depannya
+            $documentFileName = $currentDate . '_' . $documentFile->getClientOriginalName();
+
             // Simpan file di dalam direktori 'public/documents'
             $documentFile->storeAs('public/documents', $documentFileName);
 
@@ -91,7 +101,7 @@ class DocsController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+        public function updateDocs(Request $request, $id)
     {
         DB::beginTransaction();
 
@@ -106,52 +116,49 @@ class DocsController extends Controller
             }
 
             $request->validate([
-                'team_id' => 'sometimes|exists:mg_teams,id',
-                'role_id' => 'sometimes|exists:mg_roles,id',
-                'jobs_id' => 'sometimes|exists:mg_jobs,id',
-                'project_id' => 'sometimes|exists:mg_projects,id',
-                'document_name' => 'string',
-                'document_desc' => 'string',
-                'creator_id' => 'sometimes|exists:mg_employee,id',
                 'document_file' => 'sometimes|file|mimes:png,jpg,pdf,doc,docx',
             ]);
 
             if ($request->hasFile('document_file')) {
                 $documentFile = $request->file('document_file');
-                $documentFileName = time() . '_' . $documentFile->getClientOriginalName();
-                $documentFile->storeAs('public/documents', $documentFileName);
-                $document->document_file = $documentFileName;
+                $fileName = $documentFile->getClientOriginalName();
+
+                // Periksa apakah nama file sudah ada, jika ada, tambahkan string acak sebagai suffix
+                $fileNameWithoutExtension = pathinfo($fileName, PATHINFO_FILENAME);
+                $extension = $documentFile->getClientOriginalExtension();
+                $newFileName = $fileNameWithoutExtension . '_' . uniqid() . '.' . $extension;
+
+                $documentFile->storeAs('public/documents', $newFileName);
+                $document->document_file = $newFileName;
+
+                $document->save();
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Document file updated successfully',
+                    'document' => $document
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'No document file provided for update'
+                ], 400);
             }
-
-            $document->team_id = $request->input('team_id', $document->team_id);
-            $document->role_id = $request->input('role_id', $document->role_id);
-            $document->jobs_id = $request->input('jobs_id', $document->jobs_id);
-            $document->project_id = $request->input('project_id', $document->project_id);
-            $document->document_name = $request->input('document_name', $document->document_name);
-            $document->document_desc = $request->input('document_desc', $document->document_desc);
-            $document->creator_id = $request->input('creator_id', $document->creator_id);
-
-            $document->save();
-
-            DB::commit();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Document updated successfully',
-                'document' => $document
-            ], 200);
         } catch (\Exception $e) {
             DB::rollback();
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to update document',
+                'message' => 'Failed to update document file',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function delete($id)
+
+    public function deleteDocs($id)
     {
         DB::beginTransaction();
 
