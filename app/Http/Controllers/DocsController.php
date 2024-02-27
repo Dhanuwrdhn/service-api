@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Docs;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 
@@ -101,62 +102,79 @@ class DocsController extends Controller
         }
     }
 
-        public function updateDocs(Request $request, $id)
-    {
-        DB::beginTransaction();
+    public function updateDocument(Request $request, $id)
+{
+    DB::beginTransaction();
 
-        try {
-            $document = Docs::find($id);
+    try {
+        // Temukan dokumen berdasarkan ID
+        $document = Docs::find($id);
 
-            if (!$document) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Document not found'
-                ], 404);
-            }
-
-            $request->validate([
-                'document_file' => 'sometimes|file|mimes:png,jpg,pdf,doc,docx',
-            ]);
-
-            if ($request->hasFile('document_file')) {
-                $documentFile = $request->file('document_file');
-                $fileName = $documentFile->getClientOriginalName();
-
-                // Periksa apakah nama file sudah ada, jika ada, tambahkan string acak sebagai suffix
-                $fileNameWithoutExtension = pathinfo($fileName, PATHINFO_FILENAME);
-                $extension = $documentFile->getClientOriginalExtension();
-                $newFileName = $fileNameWithoutExtension . '_' . uniqid() . '.' . $extension;
-
-                $documentFile->storeAs('public/documents', $newFileName);
-                $document->document_file = $newFileName;
-
-                $document->save();
-
-                DB::commit();
-
-                return response()->json([
-                    'status' => 'success',
-                    'message' => 'Document file updated successfully',
-                    'document' => $document
-                ], 200);
-            } else {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'No document file provided for update'
-                ], 400);
-            }
-        } catch (\Exception $e) {
-            DB::rollback();
-
+        // Jika dokumen tidak ditemukan, kembalikan respons dengan status 404
+        if (!$document) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to update document file',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'Document not found'
+            ], 404);
         }
-    }
 
+        // Validasi request menggunakan Validator
+        $validator = Validator::make($request->all(), [
+            'document_file' => 'sometimes|required|file|mimes:png,jpg,pdf,doc,docx',
+        ]);
+
+        // Jika validasi gagal, kembalikan respons dengan pesan kesalahan validasi
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()->all()
+            ], 422); // 422 Unprocessable Entity
+        }
+
+        // Update atribut document_file jika ada file baru yang diunggah
+        if ($request->hasFile('document_file')) {
+            $newDocumentFile = $request->file('document_file');
+
+            // Hapus file dokumen lama dari penyimpanan
+            if (Storage::exists('public/documents/' . $document->document_file)) {
+                Storage::delete('public/documents/' . $document->document_file);
+            }
+
+            // Ambil tanggal saat ini dan ubah formatnya menjadi tanggal yang sesuai
+            $currentDate = now()->format('d_F_Y');
+
+            // Ubah nama file dengan menambahkan tanggal ke depannya
+            $newDocumentFileName = $currentDate . '_' . $newDocumentFile->getClientOriginalName();
+
+            // Simpan file di dalam direktori 'public/documents'
+            $newDocumentFile->storeAs('public/documents', $newDocumentFileName);
+
+            // Update informasi file dokumen
+            $document->document_file = $newDocumentFileName;
+        }
+
+        // Simpan perubahan pada dokumen
+        $document->save();
+
+        DB::commit();
+
+        // Tambahkan header ke respons
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Document updated successfully',
+            'document' => $document
+        ], 200)->header('Custom-Header', $document);
+    } catch (\Exception $e) {
+        DB::rollback();
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to update document',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
     public function deleteDocs($id)
     {
