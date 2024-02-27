@@ -442,7 +442,7 @@ class SubTaskController extends Controller
             }
 
             $employeeSubtask->update([
-                'isAccepted' => false,
+                'isAccepted' => null,
             ]);
 
             $subtask->update([
