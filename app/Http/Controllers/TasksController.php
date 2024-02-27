@@ -34,6 +34,16 @@ class TasksController extends Controller
         ]);
     }
 
+    public function showTaskSpecific($taskid)
+    {
+        $tasks = Task::where('id', $taskid)->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $tasks
+        ]);
+    }
+
 
     //Create Tasks
     public function createTask(Request $request)
@@ -157,6 +167,8 @@ class TasksController extends Controller
 
     $data = $request->only('task_status');
 
+    DB::beginTransaction();
+
     $task->update($data);
 
     // Check if the task status is Completed, then update mg_projects
@@ -165,34 +177,61 @@ class TasksController extends Controller
 
         if ($project) {
             $project->increment('total_task_completed');
+            $projectPercentage =  $project->total_task_completed / $project->total_task_created * 100;
+            $project->percentage = $projectPercentage;
+            $project->save();
         }
     }
 
+    DB::commit();
     return response()->json([
         'status' => 'success',
         'data' => $task
     ], 200);
 }
 
-    //Show Tasks
-
     //Delete Tasks
      public function destroy($id)
     {
+    try {
         $task = Task::find($id);
 
         if (!$task) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'task not found'
-            ]);
+                'message' => 'Task not found'
+            ], 404);
         }
 
+        $projectId = $task->project_id;
+
+        // Find the project associated with the task
+        $project = Project::find($projectId);
+
+        if (!$project) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Project not found for the task'
+            ], 404);
+        }
+
+        // Decrement total_task_created for the associated project
+        $project->total_task_created -= 1;
+        $project->save();
+
+        // Delete the task
         $task->delete();
 
         return response()->json([
             'status' => 'success',
-            'message' => 'task deleted'
-        ]);
+            'message' => 'Task deleted and total_task_created decremented'
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to delete task: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 }

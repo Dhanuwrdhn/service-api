@@ -5,27 +5,32 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Project extends Model
+class Docs extends Model
 {
-    protected $table = "mg_projects";
+    use HasFactory;
 
+    protected $table = 'mg_documents';
     protected $fillable = [
-        'project_name',
-        'project_desc',
+        'team_id',
         'role_id',
         'jobs_id',
-        'team_id',
-        'assign_by',
-        'start_date',
-        'end_date',
-        'project_status',
-        'total_task_created',
-        'total_task_completed',
+        'project_id',
+        'document_name',
+        'document_desc',
+        'creator_id',
+        'document_file',
     ];
+
     protected $casts = [
         'created_at' => 'datetime:Y-m-d H:m:s',
         'updated_at' => 'datetime:Y-m-d H:m:s'
     ];
+
+    // Relationship with Creator (Employee)
+    public function creator()
+    {
+        return $this->belongsTo(Employee::class, 'creator_id');
+    }
 
     public function jobs()
     {
@@ -39,16 +44,8 @@ class Project extends Model
     {
         return $this->belongsTo('App\Models\Role')->orderBy('id','ASC');
     }
-    // public function client()
-    // {
-    //     return $this->hasMany('App\Models\Client')->orderBy('id','ASC');
-    // }
-    public function tasks()
+    public function project()
     {
-        return $this->belongsTo('App\Models\Task')->orderBy('id','ASC');
-    }
-    public function employeeAssignees()
-    {
-        return $this->belongsToMany(Employees::class, 'mg_employee_project', 'project_id', 'employee_id');
+        return $this->belongsToMany(Project::class, 'mg_projects', 'project_id');
     }
 }

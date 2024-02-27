@@ -20,10 +20,10 @@ class EmployeeSubtasksController extends Controller
             ->select('mg_employee_subtask.*', 'mg_tasks.*',)
             ->get();
 
-        if ($employeeTask->isEmpty()) {
+        if ($employeeSubTask->isEmpty()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'No employee tasks found.'
+                'message' => 'No employee SubTask found.'
             ], 404);
         }
 
@@ -33,7 +33,7 @@ class EmployeeSubtasksController extends Controller
         ]);
     }
     // show subtask employee by id
-    public function showEmployeeSubtaskByIdSubtask($subtask_id){
+    public function showEmployeeBySubtask($subtask_id){
 
         $employeeSubtask = EmployeeSubtasks::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_subtask.employee_id')
             ->join('mg_tasks', 'mg_employee_subtask.tasks_id', '=', 'mg_tasks.id')
@@ -41,10 +41,14 @@ class EmployeeSubtasksController extends Controller
             ->select('mg_employee_subtask.*', 'mg_employee.*', 'mg_tasks.*')
             ->get();
 
+        // $employeeSubtask = EmployeeSubTasks::with(['employee', 'projects', 'Subtasks'])
+        //         ->where('subtasks_id', $subtask_id)
+        //         ->get();
+
         if ($employeeSubtask->isEmpty()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'No employee projects found for the specified employee ID.'
+                'message' => 'No employee found for the specified subtask ID.'
             ], 404);
         }
 
@@ -54,24 +58,29 @@ class EmployeeSubtasksController extends Controller
         ]);
     }
     // show employee subtasks by id
-    public function showSubtaskEmployeeByIdEmployee($employee_id){
+    public function showSubtaskByEmployee($employee_id){
 
         $employeeSubtask = EmployeeSubtasks::join('mg_employee', 'mg_employee.id', '=', 'mg_employee_subtask.employee_id')
             ->join('mg_tasks', 'mg_employee_subtask.tasks_id', '=', 'mg_tasks.id')
+            ->join('mg_sub_tasks', 'mg_employee_subtask.subtasks_id', '=', 'mg_sub_tasks.id')
             ->where('mg_employee_subtask.employee_id', $employee_id)
-            ->select('mg_employee_project.*', 'mg_employee.*', 'mg_tasks.*')
+            ->select('mg_employee_subtask.*', 'mg_employee.*', 'mg_tasks.*', 'mg_sub_tasks.*')
             ->get();
+
+        // $employeeSubtask = EmployeeSubTasks::with('employee', 'projects', 'Subtasks')
+        //     ->where('employee_id', $employee_id)
+        //     ->get();
 
         if ($employeeSubtask->isEmpty()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'No employee projects found for the specified employee ID.'
+                'message' => 'No SubTask found for the specified employee ID.'
             ], 404);
         }
 
         return response()->json([
             'status' => 'success',
-            'employeeProjects' => $employeeSubtask
+            'employeeSubTask' => $employeeSubtask
         ]);
     }
 }

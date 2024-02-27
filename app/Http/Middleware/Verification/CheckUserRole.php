@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Middleware;
+namespace App\Http\Middleware\Verification;
 
 use Closure;
 use Illuminate\Http\Request;
@@ -15,10 +15,9 @@ class CheckUserRole
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->user() &&  auth()->user()->role_id == 1) {
-            return $next($request);
-        }
+        // $authorizationHeader = $request->header('Authorization');
+        // return response()->json(['tes' => $authorizationHeader], Response::HTTP_OK);
 
-        return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        // return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
     }
 }

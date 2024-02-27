@@ -15,6 +15,14 @@ use Illuminate\Support\Facades\DB;
 
 class SubTaskController extends Controller
 {
+    // show alll subtask
+    public function showAllSubTask(){
+        $subtask = SubTasks::all();
+        return response()->json([
+            'status' => 'success',
+            'data' => $subtask
+        ]);
+    }
     public function showSubTask($id){
         $subtask= SubTasks::find($id);
         if(!$subtask){
@@ -93,6 +101,17 @@ class SubTaskController extends Controller
 
         $assignBy = Employees::find($request->input('assign_by')); // Ubah ke Employee
 
+        //mengambil semua subtask dan mengambil jumlah persentase dan jumlahkan seluruhnya
+        $totalTaskPercentage = SubTasks::where('task_id', $request->input('task_id'))->sum('subtask_percentage');;
+
+        if($totalTaskPercentage + $request->input('subtask_percentage') > 100){
+            return response()->json([
+                'status' => 'error',
+                $totalTaskPercentage,
+                'message' => 'Total percentage of subtask is more than 100%'
+            ], 400);
+        }
+
         // Membuat subtask
         $subtask = SubTasks::create($request->all());
         // Pastikan proyek dan karyawan yang terlibat ditemukan
@@ -100,8 +119,7 @@ class SubTaskController extends Controller
             throw new \Exception('task or assignBy not found.');
         }
 
-        // Membuat tugas
-        // $task = Task::create($request->all());
+
 
         // Mengassign tugas kepada karyawan
         $assignedToIds = $request->input('assign_to');
@@ -114,6 +132,7 @@ class SubTaskController extends Controller
         }
         // Menambahkan jumlah tugas yang dibuat ke dalam proyek
         $task->total_subtask_created += 1;
+        $task->task_status = 'workingOnit';
         $task->save();
 
         // Commit transaksi database
@@ -301,21 +320,20 @@ class SubTaskController extends Controller
     }
 
     //show all subtasks by employeeid
-    public function showSubTasksByEmployee(){
+    public function showSubTasksByEmployee($employee_id){
         try{
-            //get token from header
-            //get employee_id from token
-            // $subtasks = SubTasks::where('employee_id', $employee_id)
-            //                     ->get();
+            $subtasks = SubTasks::where('employee_id', $employee_id)
+                                ->get();
 
-            // if(!$subtasks){
-            //     return response()->json([
-            //         'status' => 'error',
-            //         'message' => 'subtask not found'
-            //     ], 404);
-            // }
+            if(!$subtasks){
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'subtask not found'
+                ], 404);
+            }
             return response()->json([
-                'status' => 'not yet implemented',
+                'status' => 'success',
+                'data'=> $subtasks
             ],200);
 
         }catch(\Exception $e){
@@ -493,28 +511,35 @@ class SubTaskController extends Controller
                 'end_date' => 'sometimes|date',
                 'subtask_status' => 'sometimes|string',
             ]);
-            
+
             // there is 2 condition when a subtask is on review, either the user rejected an pending task and admin has to review it, or the user submit the task and admin has to review it
-            // if the user rejected the task, the status will be onReview, and the reason why they rejectwill be filled 
+            // if the user rejected the task, the status will be onReview, and the reason why they rejectwill be filled
             // then admin will review the task, and change the status to onPending
             // if the user submit the task, the status will be onReview with confirmation image, and the reason will be filled
             // then admin will review the task, and change the status to completed
-            
+
             if ($subtask->subtask_image != null){
                 $validatedData['subtask_status'] = 'Completed';
-                
+                $subtask->update($validatedData);
+
                 //update Task informations
                 $updateTask = Task::find($subtask->task_id);
+                $totalPercentageOfCompletedTask =  SubTasks::where('task_id', $updateTask->id)
+                                                            ->where('subtask_status', 'Completed')
+                                                            ->sum('subtask_percentage');
+                $updateTask->percentage_task = $totalPercentageOfCompletedTask;
                 $updateTask->total_subtask_completed += 1;
-                $updateTask->percentage_task += $subtask->subtask_percentage;
                 $updateTask->save();
+
+
 
             } else if ($subtask->subtask_image === null || $subtask->subtask_image === 0){
                 $validatedData['subtask_status'] = 'onPending';
                 $validatedData['reason']=null;
+                $subtask->update($validatedData);
             }
 
-            $subtask->update($validatedData);
+
 
 
             DB::commit();
@@ -528,6 +553,54 @@ class SubTaskController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to review subtask: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+        public function destroy($id)
+        {
+        try {
+            DB::beginTransaction();
+
+            $subtask = SubTasks::find($id);
+
+            if (!$subtask) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Subtask not found'
+                ], 404);
+            }
+
+            // Dapatkan task terkait dengan subtask
+            $task = Task::find($subtask->task_id);
+
+            if (!$task) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Task not found for the subtask'
+                ], 404);
+            }
+
+            // Kurangi nilai total_subtasks_created pada model Task
+            $task->total_subtask_created -= 1;
+
+            // Simpan perubahan pada model Task
+            $task->save();
+
+            // Hapus subtask
+            $subtask->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Subtask deleted and total_subtasks_created decremented'
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to delete subtask: ' . $e->getMessage()
             ], 500);
         }
     }
