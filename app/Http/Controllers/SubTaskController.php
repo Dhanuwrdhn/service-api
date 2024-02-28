@@ -517,7 +517,7 @@ class SubTaskController extends Controller
             // if the user rejected the task, the status will be onReview, and the reason why they rejectwill be filled
             // then admin will review the task, and change the status to onPending
             // if the user submit the task, the status will be onReview with confirmation image, and the reason will be filled
-            // then admin will review the task, and change the status to completed
+            // then admin will review the task, and change the status to complete d
 
             // jika image null, berarti kasus untuk review subtask yang di reject, dan setelah di review, akan return response
             if ($subtask->subtask_image === null || $subtask->subtask_image === 0){
@@ -548,6 +548,7 @@ class SubTaskController extends Controller
                 $updateTask->percentage_task = $totalPercentageOfCompletedTask;
                 $updateTask->total_subtask_completed += 1;
                 $updateTask->save();
+                DB::commit();
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Subtask submission reviewed successfully, and status changed to completed',
@@ -557,6 +558,7 @@ class SubTaskController extends Controller
             } else if($request->input('isAccepted') === false){
                 $validatedData['subtask_status'] = 'onPending';
                 $subtask->update($validatedData);
+                DB::commit();
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Subtask submission successfully rejected, and status changed to onPending',

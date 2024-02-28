@@ -7,6 +7,8 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\Employees;
 use App\Models\EmployeeTasks;
+use App\Models\SubTasks;
+use App\Models\EmployeeSubtasks;
 use App\Models\EmployeeProject;
 
 use Illuminate\Support\Facades\DB;
@@ -73,6 +75,7 @@ class TasksController extends Controller
         'total_subtask_created' => 'nullable|string',
         'total_subtask_completed' => 'nullable|string',
         'task_status' => 'in:onPending,onReview,workingOnIt,Completed', // Pastikan task_status di antara nilai yang valid
+        'enableSubtask' => 'sometimes|boolean',
     ];
 
     // Validasi input
@@ -96,7 +99,10 @@ class TasksController extends Controller
 
         // Pastikan proyek dan karyawan yang terlibat ditemukan
         if (!$project || !$assignBy) {
-            throw new \Exception('Project or assignBy not found.');
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Project or employee not found'
+            ], 404);
         }
 
         // Membuat tugas
@@ -120,14 +126,58 @@ class TasksController extends Controller
 
         $project->save();
 
+        // if toggle of enablesubtask is enabled, it means user need to create subtask manually, and will be redirected to subtask creation page
+        if($request->input('enableSubtask') == true){
+            DB::commit();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Task created successfully. Please create subtask manually.',
+                'data' => $task
+            ], 200);
+        }
+
+        // this line will be executed if toggle of enablesubtask is disabled, which means user dont need to create subtask, which controller will create automatically.
+
+        //create subtask
+        $subtask = SubTasks::create([
+            'task_id' => $task->id, // Ubah ke 'task_id'
+            'subtask_name' => $request->input('task_name'),
+            'subtask_description' => $request->input('task_description'),
+            'assign_by' => $request->input('assign_by'),
+            'start_date' => $request->input('start_date'),
+            'end_date' => $request->input('end_date'),
+            'subtask_status' => 'onPending',
+            'subtask_submit_status' => null,
+            'subtask_percentage' => 100,
+            'subtask_image' => null,
+            'reason' => null,
+        ]);
+
+        // Mengassign tugas kepada karyawan
+        $assignedToIds = $request->input('assign_to');
+        foreach ($assignedToIds as $assignedToId) {
+            EmployeeSubtasks::create([
+                'employee_id' => $assignedToId,
+                'tasks_id' => $task->id,
+                'subtasks_id' => $subtask->id,
+            ]);
+        }
+        // Menambahkan jumlah tugas yang dibuat ke dalam proyek
+        $task->total_subtask_created += 1;
+        $task->task_status = 'workingOnit';
+        $task->save();
+
         // Commit transaksi database
         DB::commit();
 
-        // Respon berhasil
         return response()->json([
             'status' => 'success',
-            'data' => $task
+            'message' => 'Task and auto subtask created successfully',
+            'task' => $task,
+            'subtask' => $subtask
         ], 200);
+
+
     } catch (\Exception $e) {
         // Rollback transaksi database jika terjadi kesalahan
         DB::rollBack();
