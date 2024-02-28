@@ -510,6 +510,7 @@ class SubTaskController extends Controller
                 'start_date' => 'sometimes|date',
                 'end_date' => 'sometimes|date',
                 'subtask_status' => 'sometimes|string',
+                'isAccepted' => 'sometimes|boolean',
             ]);
 
             // there is 2 condition when a subtask is on review, either the user rejected an pending task and admin has to review it, or the user submit the task and admin has to review it
@@ -518,7 +519,24 @@ class SubTaskController extends Controller
             // if the user submit the task, the status will be onReview with confirmation image, and the reason will be filled
             // then admin will review the task, and change the status to completed
 
-            if ($subtask->subtask_image != null){
+            // jika image null, berarti kasus untuk review subtask yang di reject, dan setelah di review, akan return response
+            if ($subtask->subtask_image === null || $subtask->subtask_image === 0){
+                $validatedData['subtask_status'] = 'onPending';
+                $validatedData['reason']=null;
+                $subtask->update($validatedData);
+                
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Rejected Subtask reviewed successfully',
+                    'data' => $subtask
+                ]);
+
+            }
+
+            // di bawah sudah pasti ada image, karena sudah di kondisikan di atas jika case ada yg null, langsung return
+
+            // terima input isAccepted, jika true, maka subtask status akan berubah menjadi completed, jika false maka akan menjadi onPending
+            if($request->input('isAccepted') === true){
                 $validatedData['subtask_status'] = 'Completed';
                 $subtask->update($validatedData);
 
@@ -530,25 +548,25 @@ class SubTaskController extends Controller
                 $updateTask->percentage_task = $totalPercentageOfCompletedTask;
                 $updateTask->total_subtask_completed += 1;
                 $updateTask->save();
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Subtask submission reviewed successfully, and status changed to completed',
+                    'data' => $subtask
+                ]);
 
-
-
-            } else if ($subtask->subtask_image === null || $subtask->subtask_image === 0){
+            } else if($request->input('isAccepted') === false){
                 $validatedData['subtask_status'] = 'onPending';
-                $validatedData['reason']=null;
                 $subtask->update($validatedData);
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Subtask submission successfully rejected, and status changed to onPending',
+                    'data' => $subtask
+                ]);
             }
-
-
-
 
             DB::commit();
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Subtask reviewed successfully',
-                'data' => $subtask
-            ]);
+            
         }catch(\Exception $e){
             return response()->json([
                 'status' => 'error',
