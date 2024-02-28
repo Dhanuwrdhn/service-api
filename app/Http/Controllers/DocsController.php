@@ -139,6 +139,7 @@ class DocsController extends Controller
 
     try {
         // Temukan dokumen berdasarkan ID
+
         $document = Docs::find($id);
 
         // Jika dokumen tidak ditemukan, kembalikan respons dengan status 404
@@ -151,7 +152,7 @@ class DocsController extends Controller
 
         // Validasi request menggunakan Validator
         $validator = Validator::make($request->all(), [
-            'document_file' => 'sometimes|required|file|mimes:png,jpg,pdf,doc,docx',
+            'document_file' => 'required|file|mimes:png,jpg,pdf,doc,docx',
         ]);
 
         // Jika validasi gagal, kembalikan respons dengan pesan kesalahan validasi
@@ -164,26 +165,30 @@ class DocsController extends Controller
         }
 
         // Update atribut document_file jika ada file baru yang diunggah
-        if ($request->hasFile('document_file')) {
-            $newDocumentFile = $request->file('document_file');
-
-            // Hapus file dokumen lama dari penyimpanan
-            if (Storage::exists('public/documents/' . $document->document_file)) {
-                Storage::delete('public/documents/' . $document->document_file);
-            }
-
-            // Ambil tanggal saat ini dan ubah formatnya menjadi tanggal yang sesuai
-            $currentDate = now()->format('d_F_Y');
-
-            // Ubah nama file dengan menambahkan tanggal ke depannya
-            $newDocumentFileName = $currentDate . '_' . $newDocumentFile->getClientOriginalName();
-
-            // Simpan file di dalam direktori 'public/documents'
-            $newDocumentFile->storeAs('public/documents', $newDocumentFileName);
-
-            // Update informasi file dokumen
-            $document->document_file = $newDocumentFileName;
+        if (!$request->hasFile('document_file')) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Document file not found'
+            ]);
         }
+        $newDocumentFile = $request->file('document_file');
+
+        // Hapus file dokumen lama dari penyimpanan
+        if (Storage::exists('public/documents/' . $document->document_file)) {
+            Storage::delete('public/documents/' . $document->document_file);
+        }
+
+        // Ambil tanggal saat ini dan ubah formatnya menjadi tanggal yang sesuai
+        $currentDate = now()->format('d_F_Y');
+
+        // Ubah nama file dengan menambahkan tanggal ke depannya
+        $newDocumentFileName = $currentDate . '_' . $newDocumentFile->getClientOriginalName();
+
+        // Simpan file di dalam direktori 'public/documents'
+        $newDocumentFile->storeAs('public/documents', $newDocumentFileName);
+
+        // Update informasi file dokumen
+        $document->document_file = $newDocumentFileName;
 
         // Simpan perubahan pada dokumen
         $document->save();
