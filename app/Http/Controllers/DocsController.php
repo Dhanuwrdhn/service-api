@@ -93,8 +93,8 @@ class DocsController extends Controller
             // Ambil tanggal saat ini dan ubah formatnya menjadi tanggal yang sesuai
             $currentDate = now()->format('d_F_Y'); // Misalnya, 21_February_2024
 
-            // Ubah nama file dengan menambahkan tanggal ke depannya
-            $documentFileName = $currentDate . '_' . $documentFile->getClientOriginalName();
+            // Ubah nama file dengan menambahkan tanggal ke depannya dan ganti spasi menjadi underscore
+            $documentFileName = $currentDate . '_' . str_replace(' ', '_', $documentFile->getClientOriginalName());
 
             // Simpan file di dalam direktori 'public/documents'
             $documentFile->storeAs('documents', $documentFileName, 'public');
