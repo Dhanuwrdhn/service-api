@@ -10,14 +10,21 @@ use App\Models\Employees;
 use App\Models\EmployeeTasks;
 use App\Models\EmployeeSubtasks;
 use App\Models\EmployeeProject;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class SubTaskController extends Controller
 {
     // show alll subtask
     public function showAllSubTask(){
         $subtask = SubTasks::all();
+        if(!$subtask){
+            return response()->json([
+                'status' => 'error',
+                'message' => 'subtask not found'
+            ], 404);
+        }
         return response()->json([
             'status' => 'success',
             'data' => $subtask
@@ -195,105 +202,106 @@ class SubTaskController extends Controller
 
     // Submit subtask
     public function submitSubtask(Request $request, $id){
-        $rules = [
-            'reason'=>'sometimes|string',
-            'confirmation_image' => 'required|string', // Ubah validasi gambar menjadi string
-        ];
+    $rules = [
+        'reason'=>'sometimes|string',
+        'confirmation_image' => 'required|string', // Ubah validasi gambar menjadi string
+    ];
 
-        $validator = Validator::make($request->all(), $rules);
+    $validator = Validator::make($request->all(), $rules);
 
-        if ($validator->fails()) {
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $validator->errors()
+        ], 400);
+    }
+
+    try {
+        DB::beginTransaction();
+
+        $subtask = SubTasks::findOrFail($id);
+
+        //check if subtask status is already on review
+        if($subtask->subtask_status == 'onReview'){
             return response()->json([
                 'status' => 'error',
-                'message' => $validator->errors()
+                'message' => 'Subtask already submitted, waiting for review',
             ], 400);
         }
 
-        try {
-            DB::beginTransaction();
+        // Mendapatkan tanggal sekarang
+        $currentDate = (new \DateTime())->format('Y-m-d H:i:s');
 
-            $subtask = SubTasks::findOrFail($id);
+        // Mendapatkan tanggal berakhir subtask
+        $endDate = $subtask->end_date;
 
-            //check if subtask status is already on review
-            if($subtask->subtask_status == 'onReview'){
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Subtask already submitted, waiting for review',
-                ], 400);
-            }
+        // Menghitung selisih hari antara tanggal sekarang dan tanggal berakhir subtask
+        $daysDifference = (new \DateTime($currentDate))->diff(new \DateTime($endDate))->days;
 
-            // Mendapatkan tanggal sekarang
-            $currentDate = (new \DateTime())->format('Y-m-d H:i:s');
-
-            // Mendapatkan tanggal berakhir subtask
-            $endDate = $subtask->end_date;
-
-            // Menghitung selisih hari antara tanggal sekarang dan tanggal berakhir subtask
-            $daysDifference = (new \DateTime($currentDate))->diff(new \DateTime($endDate))->days;
-
-            // Menentukan subtask_submit_status berdasarkan selisih hari
-            if ($daysDifference < 0) {
-                $subtaskSubmitStatus = 'earlyFinish'; // Jika selesai sebelum end_date
-            } elseif ($daysDifference === 0) {
-                $subtaskSubmitStatus = 'finish'; // Jika selesai tepat pada end_date
-            } elseif ($daysDifference <= 3) {
-                $subtaskSubmitStatus = 'finish in delay'; // Jika selesai kurang dari atau sama dengan 3 hari setelah end_date
-            } else {
-                $subtaskSubmitStatus = 'overdue'; // Jika melewati 3 hari setelah end_date
-            }
-
-            // Decode data URI base64 ke dalam binary data gambar
-            $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->confirmation_image));
-
-            // Simpan data gambar ke dalam file
-            $imageName = uniqid() . '.png'; // Generate nama unik untuk gambar
-            $imagePath = 'photos\\' . $imageName; // Path baru untuk menyimpan di public/photos
-            $path = public_path($imagePath); // Path lengkap ke direktori public
-
-            // If an old image exists, delete it
-            if ($subtask->subtask_image) {
-                $oldImagePath = public_path($subtask->subtask_image);
-                if (file_exists($oldImagePath)) {
-                    unlink($oldImagePath);
-                }
-            }
-            // save image data
-            file_put_contents($path, $imageData);
-
-            // Simpan path gambar konfirmasi dalam basis data
-            $subtask->update([
-                'subtask_status' => 'onReview',
-                'subtask_submit_status' => $subtaskSubmitStatus,
-                'subtask_image' => $imagePath,
-                'reason' => $request->reason
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Subtask submitted successfully',
-                'data' => [
-                    'subtask_name' => $subtask->subtask_name,
-                    'start_date' => $subtask->start_date->format('Y-m-d H:i:s'),
-                    'end_date' => $subtask->end_date->format('Y-m-d H:i:s'),
-                    'submit_time' =>$currentDate,
-                    'day_before_end_date' => $daysDifference,
-                    'subtask_status' => $subtask->subtask_status,
-                    'subtask_submit_status' => $subtask->subtask_submit_status,
-                    'reason' => $subtask->reason? $subtask->reason : null,
-                ],
-
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to submit subtask: ' . $e->getMessage()
-            ], 500);
+        // Menentukan subtask_submit_status berdasarkan selisih hari
+        if ($daysDifference < 0) {
+            $subtaskSubmitStatus = 'earlyFinish'; // Jika selesai sebelum end_date
+        } elseif ($daysDifference === 0) {
+            $subtaskSubmitStatus = 'finish'; // Jika selesai tepat pada end_date
+        } elseif ($daysDifference <= 3) {
+            $subtaskSubmitStatus = 'finish in delay'; // Jika selesai kurang dari atau sama dengan 3 hari setelah end_date
+        } else {
+            $subtaskSubmitStatus = 'overdue'; // Jika melewati 3 hari setelah end_date
         }
+
+        // Decode data URI base64 ke dalam binary data gambar
+        $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->confirmation_image));
+
+        // Simpan data gambar ke dalam file
+        $imageName = uniqid() . '.png'; // Generate nama unik untuk gambar
+        $imagePath = 'photos/' . $imageName; // Path baru untuk menyimpan di public/photos
+        $path = public_path($imagePath); // Path lengkap ke direktori public
+
+        // Jika gambar lama ada, hapus
+        if ($subtask->subtask_image) {
+            $oldImagePath = public_path($subtask->subtask_image);
+            if (file_exists($oldImagePath)) {
+                unlink($oldImagePath);
+            }
+        }
+        // simpan data gambar
+        file_put_contents($path, $imageData);
+
+        // Simpan path gambar konfirmasi dalam basis data
+        $subtask->update([
+            'subtask_status' => 'onReview',
+            'subtask_submit_status' => $subtaskSubmitStatus,
+            'subtask_image' => $imagePath,
+            'reason' => $request->reason
+        ]);
+
+        DB::commit();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Subtask submitted successfully',
+            'data' => [
+                'subtask_name' => $subtask->subtask_name,
+                'start_date' => $subtask->start_date->format('Y-m-d H:i:s'),
+                'end_date' => $subtask->end_date->format('Y-m-d H:i:s'),
+                'submit_time' =>$currentDate,
+                'confirmation_image' => $imagePath,
+                'day_before_end_date' => $daysDifference,
+                'subtask_status' => $subtask->subtask_status,
+                'subtask_submit_status' => $subtask->subtask_submit_status,
+                'reason' => $subtask->reason? $subtask->reason : null,
+            ],
+
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to submit subtask: ' . $e->getMessage()
+        ], 500);
     }
+}
     // show all subtasks by task
     public function showSubTasksByTask($task_id){
         try{
@@ -442,7 +450,7 @@ class SubTaskController extends Controller
             }
 
             $employeeSubtask->update([
-                'isAccepted' => false,
+                'isAccepted' => null,
             ]);
 
             $subtask->update([
@@ -510,15 +518,33 @@ class SubTaskController extends Controller
                 'start_date' => 'sometimes|date',
                 'end_date' => 'sometimes|date',
                 'subtask_status' => 'sometimes|string',
+                'isAccepted' => 'sometimes|boolean',
             ]);
 
             // there is 2 condition when a subtask is on review, either the user rejected an pending task and admin has to review it, or the user submit the task and admin has to review it
             // if the user rejected the task, the status will be onReview, and the reason why they rejectwill be filled
             // then admin will review the task, and change the status to onPending
             // if the user submit the task, the status will be onReview with confirmation image, and the reason will be filled
-            // then admin will review the task, and change the status to completed
+            // then admin will review the task, and change the status to complete d
 
-            if ($subtask->subtask_image != null){
+            // jika image null, berarti kasus untuk review subtask yang di reject, dan setelah di review, akan return response
+            if ($subtask->subtask_image === null || $subtask->subtask_image === 0){
+                $validatedData['subtask_status'] = 'onPending';
+                $validatedData['reason']=null;
+                $subtask->update($validatedData);
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Rejected Subtask reviewed successfully',
+                    'data' => $subtask
+                ]);
+
+            }
+
+            // di bawah sudah pasti ada image, karena sudah di kondisikan di atas jika case ada yg null, langsung return
+
+            // terima input isAccepted, jika true, maka subtask status akan berubah menjadi completed, jika false maka akan menjadi onPending
+            if($request->input('isAccepted') === true){
                 $validatedData['subtask_status'] = 'Completed';
                 $subtask->update($validatedData);
 
@@ -530,25 +556,27 @@ class SubTaskController extends Controller
                 $updateTask->percentage_task = $totalPercentageOfCompletedTask;
                 $updateTask->total_subtask_completed += 1;
                 $updateTask->save();
+                DB::commit();
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Subtask submission reviewed successfully, and status changed to completed',
+                    'data' => $subtask
+                ]);
 
-
-
-            } else if ($subtask->subtask_image === null || $subtask->subtask_image === 0){
+            } else if($request->input('isAccepted') === false){
                 $validatedData['subtask_status'] = 'onPending';
-                $validatedData['reason']=null;
                 $subtask->update($validatedData);
+                DB::commit();
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Subtask submission successfully rejected, and status changed to onPending',
+                    'data' => $subtask
+                ]);
             }
-
-
-
 
             DB::commit();
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Subtask reviewed successfully',
-                'data' => $subtask
-            ]);
+
         }catch(\Exception $e){
             return response()->json([
                 'status' => 'error',
