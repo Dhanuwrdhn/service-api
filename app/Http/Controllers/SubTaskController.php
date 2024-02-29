@@ -19,6 +19,12 @@ class SubTaskController extends Controller
     // show alll subtask
     public function showAllSubTask(){
         $subtask = SubTasks::all();
+        if(!$subtask){
+            return response()->json([
+                'status' => 'error',
+                'message' => 'subtask not found'
+            ], 404);
+        }
         return response()->json([
             'status' => 'success',
             'data' => $subtask
