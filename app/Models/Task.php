@@ -12,14 +12,13 @@ class Task extends Model
     protected $table = 'mg_tasks';
     protected $fillable = [
         'project_id',
+        'assign_by',
         'task_name',
         'task_description',
         'start_date',
         'end_date',
-        'assign_by',
         'percentage_task',
-        'total_subtask_created',
-        'total_subtask_completed',
+        'completed_date',
         'task_status',
         'task_submit_status',
     ];

@@ -14,15 +14,17 @@ return new class extends Migration
         Schema::create('mg_tasks', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('project_id');
-            $table->string('task_name');
-            $table->string('task_description')->nullable();
             $table->unsignedBigInteger('assign_by');
+            $table->string('task_name');
+            $table->string('task_desc')->nullable();
             $table->datetime('start_date')->default(now()->toDateTimeString());
             $table->datetime('end_date');
-            $table->string('percentage_task')->nullable();
-            $table->string('total_subtask_created')->nullable();
-            $table->string('total_subtask_completed')->nullable();
-            $table->enum('task_status', ['onPending','onReview', 'workingOnIt', 'Completed', ])->nullable();
+            $table->enum('percentage_task',['0','5','10','15','20','25','30','35','40','45','50','55','60','65','70','75','80','85','90','95','100'])->nullable();
+            $table->enum('task_status', ['onPending','onReview', 'workingOnIt', 'Completed', ])->default('onPending');
+            $table->enum('task_submit_status', ['earlyFinish', 'finish', 'finish in delay','overdue' ])->nullable();
+            $table->datetime('completed_date')->nullable();
+            $table->string('task_image')->nullable();
+            $table->string('task_reason')->nullable();
             $table->timestamps();
 
             $table->foreign('assign_by')->references('id')->on('mg_employee')->onDelete('cascade');

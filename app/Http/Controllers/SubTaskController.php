@@ -126,8 +126,6 @@ class SubTaskController extends Controller
             throw new \Exception('task or assignBy not found.');
         }
 
-
-
         // Mengassign tugas kepada karyawan
         $assignedToIds = $request->input('assign_to');
         foreach ($assignedToIds as $assignedToId) {
