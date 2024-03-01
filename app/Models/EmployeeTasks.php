@@ -12,7 +12,8 @@ class EmployeeTasks extends Model
     protected $fillable = [
         'employee_id',
         'tasks_id',
-        'project_id'
+        'project_id',
+        'isAccepted'
     ];
 
     protected $casts = [

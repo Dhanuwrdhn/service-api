@@ -14,13 +14,15 @@ class Task extends Model
         'project_id',
         'assign_by',
         'task_name',
-        'task_description',
+        'task_desc',
         'start_date',
         'end_date',
         'percentage_task',
         'completed_date',
         'task_status',
         'task_submit_status',
+        'task_image',
+        'task_reason',
     ];
     protected $casts = [
         'created_at' => 'datetime:Y-m-d H:m:s',
