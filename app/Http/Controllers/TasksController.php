@@ -505,7 +505,7 @@ class TasksController extends Controller
             elseif($task->task_status != 'onReview' && $task->task_image === null){
                 return response()->json(['status' => 'error','message' => 'unable to review because status is already reviewed, please edit instead'], 400);
             }
-
+            
             //validate request
             $validatedData = $request->validate([
                 'task_name' => 'sometimes|string',
@@ -513,7 +513,21 @@ class TasksController extends Controller
                 'start_date' => 'sometimes|date',
                 'end_date' => 'sometimes|date',
                 'percentage_task' => 'sometimes|in:0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100',
-                'task_status' => 'sometimes|in:onPending,onReview,workingOnIt,Completed',
+                // 'task_status' => 'sometimes|in:onPending,onReview,workingOnIt,Completed',
+                'assign_to' => 'sometimes|array', // assign_to harus berupa array
+                'assign_to.*' => [ // setiap item di assign_to harus ada dalam mg_employee_project dan terkait dengan proyek yang sesuai
+                    'exists:mg_employee_project,employee_id',
+                    function ($attribute, $value, $fail) use ($request,$id) {
+                        // Validasi tambahan: pastikan karyawan terkait dengan proyek yang sesuai
+                        $projectId = Task::where('id', $id)->first('project_id')->project_id;
+                        $employeeProject = EmployeeProject::where('employee_id', $value)
+                                                        ->where('project_id', $projectId)
+                                                        ->exists();
+                        if (!$employeeProject) {
+                            $fail("Employee with ID $value is not associated with the specified project.");
+                        }
+                    },
+                ],
                 'isAccepted' => 'sometimes|boolean', //to check if review reject or review submission task
             ]);
 
@@ -522,11 +536,24 @@ class TasksController extends Controller
                 $validatedData['task_status'] = 'onPending';
                 $validatedData['task_reason']=null;
                 $task->update($validatedData);
+                //update assignTo
+                $assignedToIds = $request->input('assign_to');
+                // delete employeetask where task_id = $id
+                EmployeeTasks::where('tasks_id', $id)->delete();
+                // add new employee task
+                foreach ($assignedToIds as $assignedToId) {
+                    EmployeeTasks::create([
+                        'tasks_id' => $task->id,
+                        'project_id' => $task->project_id,
+                        'employee_id' => $assignedToId,
+                    ]);
+                }
                 DB::commit();
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Rejected task is reviewed successfully',
-                    'data' => $task
+                    'data' => $task,
+                    'assigned_to' => $assignedToIds,
                 ]);
             }
             //review for submission
