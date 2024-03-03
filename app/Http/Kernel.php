@@ -16,6 +16,7 @@ class Kernel extends HttpKernel
 
     protected $routeMiddleware = [
         'checkuserrole' => \App\Http\Middleware\Verification\CheckUserRole::class,
+        \App\Http\Middleware\CorsMiddleware::class,
     ];
 
     protected $middleware = [
@@ -26,6 +27,7 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        \App\Http\Middleware\CorsMiddleware::class,
     ];
 
     /**

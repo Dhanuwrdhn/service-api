@@ -10,13 +10,11 @@ class CorsMiddleware
 {
     public function handle($request, Closure $next)
     {
-        $response = $next($request);
+        return $next($request)
+            ->header('Access-Control-Allow-Origin', '*')
+            ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+            ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+            ->header('Access-Control-Expose-Headers', 'Content-Length, Content-Range');
 
-        $response->header('Access-Control-Allow-Origin', '*');
-        $response->header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-        $response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        $response->header('Access-Control-Expose-Headers', 'Content-Length, Content-Range');
-
-        return $response;
     }
 }
