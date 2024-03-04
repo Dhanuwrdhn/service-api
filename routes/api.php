@@ -22,6 +22,8 @@ require __DIR__.'/api/documents.routes.php';
 require __DIR__.'/api/task.routes.php';
 // API SUBTASKS
 require __DIR__.'/api/subtask.routes.php';
+// API LEAVES
+require __DIR__.'/api/leave.routes.php';
 // API EMPLOYEE PROJECTS
 require __DIR__.'/api/employeeProject.routes.php';
 // API EMPLOYEE TASKS

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('task_desc')->nullable();
             $table->datetime('start_date')->default(now()->toDateTimeString());
             $table->datetime('end_date');
-            $table->enum('percentage_task',['0','5','10','15','20','25','30','35','40','45','50','55','60','65','70','75','80','85','90','95','100'])->nullable();
+            $table->integer('percentage_task')->nullable();
             $table->enum('task_status', ['onPending','onReview', 'workingOnIt', 'Completed', ])->default('onPending');
             $table->enum('task_submit_status', ['earlyFinish', 'finish', 'finish in delay','overdue' ])->nullable();
             $table->datetime('completed_date')->nullable();
