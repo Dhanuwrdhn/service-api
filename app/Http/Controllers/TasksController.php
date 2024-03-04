@@ -18,6 +18,13 @@ class TasksController extends Controller
     //Get Tasks all
     public function index(){
         $tasks=Task::all();
+        foreach ($tasks as $task) {
+            $assignedEmployees = EmployeeTasks::with(['employee' => function($query) {
+                $query->select('id', 'employee_name');
+            }])->where('tasks_id', $task->id)->get();
+            $task->assignedEmployees = $assignedEmployees->pluck('employee');
+
+        }
         return response()->json([
             'success'=> 'success',
             'data' => $tasks
