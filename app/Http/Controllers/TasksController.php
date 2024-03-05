@@ -163,7 +163,7 @@ class TasksController extends Controller
                     'message' => 'Total percentage of subtask is more than 100%'
                 ], 400);
             }
-            
+
             // Membuat tugas baru
             $task = Task::create($request->all());
 
@@ -278,7 +278,7 @@ class TasksController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'task updated successfully',
-                'data' => $task, 
+                'data' => $task,
                 'assigned_to' => $assignedToIds,
             ]);
         }catch(\Exception $e){
@@ -329,7 +329,7 @@ class TasksController extends Controller
             $task->update([
                 'task_status' => 'workingOnIt'
             ]);
-            
+
             DB::commit();
 
             return response()->json([
@@ -432,9 +432,9 @@ class TasksController extends Controller
             if ($daysDifference < 0) {
                 $taskStatus = 'earlyFinish';
             } elseif ($daysDifference === 0) {
-                $taskStatus = 'finish'; 
+                $taskStatus = 'finish';
             } elseif ($daysDifference <= 3) {
-                $taskStatus = 'finish in delay'; 
+                $taskStatus = 'finish in delay';
             } else {
                 $taskStatus = 'overdue';
             }
@@ -512,7 +512,7 @@ class TasksController extends Controller
             elseif($task->task_status != 'onReview' && $task->task_image === null){
                 return response()->json(['status' => 'error','message' => 'unable to review because status is already reviewed, please edit instead'], 400);
             }
-            
+
             //validate request
             $validatedData = $request->validate([
                 'task_name' => 'sometimes|string',
