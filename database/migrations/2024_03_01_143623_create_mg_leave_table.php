@@ -19,6 +19,7 @@ return new class extends Migration
             $table->datetime('start_date')->default(now()->toDateTimeString());
             $table->datetime('end_date')->nullable();
             $table->string('leave_reason')->nullable();
+            $table->tinyInteger('isApproval'); //
             $table->enum('leave_status',['onPending','onReview','Allowed'])->nullable();
             $table->integer('total_days_leave')->nullable();// Set default value to 0
             $table->integer('total_leave_year')->nullable(); // Set default value to 0

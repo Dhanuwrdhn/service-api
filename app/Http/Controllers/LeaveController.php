@@ -286,7 +286,7 @@ class LeaveController extends Controller
                 'status' => 'success',
                 'message' => 'Leave request submitted successfully',
                 'data' => $leave
-            ], 201);
+            ], 200);
         } catch (\Exception $e) {
             // Rollback transaction on error
             DB::rollBack();
@@ -299,5 +299,20 @@ class LeaveController extends Controller
             ], 500);
         }
     }
+    public function acceptLeave(Request $request, $id){
+        try{
 
+            DB::beginTransaction();
+            // Get the leave request by id
+            $leave = Leaves::findOrFail($id);
+            if ($leave->leave_status != "onApproval")
+            throw new \Exception("Invalid action");
+        }catch(\Exception $e){
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to accept task: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
